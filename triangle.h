@@ -248,34 +248,36 @@
 /*                                                                           */
 /*****************************************************************************/
 
+#include <memory>
+
 struct triangulateio {
-  REAL *pointlist;                                               /* In / out */
-  REAL *pointattributelist;                                      /* In / out */
-  int *pointmarkerlist;                                          /* In / out */
+  std::shared_ptr<REAL[]> pointlist;                                               /* In / out */
+  std::shared_ptr<REAL[]> pointattributelist;                                      /* In / out */
+  std::shared_ptr<int[]> pointmarkerlist;                                          /* In / out */
   int numberofpoints;                                            /* In / out */
   int numberofpointattributes;                                   /* In / out */
 
-  int *trianglelist;                                             /* In / out */
-  REAL *triangleattributelist;                                   /* In / out */
-  REAL *trianglearealist;                                         /* In only */
-  int *neighborlist;                                             /* Out only */
+  std::shared_ptr<int[]> trianglelist;                                             /* In / out */
+  std::shared_ptr<REAL[]> triangleattributelist;                                   /* In / out */
+  std::shared_ptr<REAL[]> trianglearealist;                                         /* In only */
+  std::shared_ptr<int[]> neighborlist;                                             /* Out only */
   int numberoftriangles;                                         /* In / out */
   int numberofcorners;                                           /* In / out */
   int numberoftriangleattributes;                                /* In / out */
 
-  int *segmentlist;                                              /* In / out */
-  int *segmentmarkerlist;                                        /* In / out */
+  std::shared_ptr<int[]> segmentlist;                                              /* In / out */
+  std::shared_ptr<int[]> segmentmarkerlist;                                        /* In / out */
   int numberofsegments;                                          /* In / out */
 
-  REAL *holelist;                        /* In / pointer to array copied out */
+  std::shared_ptr<REAL[]> holelist;                        /* In / pointer to array copied out */
   int numberofholes;                                      /* In / copied out */
 
-  REAL *regionlist;                      /* In / pointer to array copied out */
+  std::shared_ptr<REAL[]> regionlist;                      /* In / pointer to array copied out */
   int numberofregions;                                    /* In / copied out */
 
-  int *edgelist;                                                 /* Out only */
-  int *edgemarkerlist;            /* Not used with Voronoi diagram; out only */
-  REAL *normlist;                /* Used only with Voronoi diagram; out only */
+  std::shared_ptr<int[]> edgelist;                                                 /* Out only */
+  std::shared_ptr<int[]> edgemarkerlist;            /* Not used with Voronoi diagram; out only */
+  std::shared_ptr<REAL[]> normlist;                /* Used only with Voronoi diagram; out only */
   int numberofedges;                                             /* Out only */
 };
 

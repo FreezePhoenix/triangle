@@ -1,3 +1,5 @@
+#include <memory>
+#define ANSI_DECLARATORS
 /*****************************************************************************/
 /*                                                                           */
 /*      888888888        ,o,                          / 888                  */
@@ -1414,43 +1416,21 @@ REAL area;                                      /* The area of the triangle. */
 /**                                                                         **/
 /**                                                                         **/
 
-#ifdef ANSI_DECLARATORS
-void triexit(int status)
-#else /* not ANSI_DECLARATORS */
-void triexit(status)
-int status;
-#endif /* not ANSI_DECLARATORS */
-
-{
-  throw std::runtime_error("triexit("+std::to_string(status)+")");
+void triexit(int status) {
+  exit(status);
 }
 
-#ifdef ANSI_DECLARATORS
-VOID *trimalloc(int size)
-#else /* not ANSI_DECLARATORS */
-VOID *trimalloc(size)
-int size;
-#endif /* not ANSI_DECLARATORS */
-
-{
-  VOID *memptr;
-
-  memptr = (VOID *) malloc((unsigned int) size);
-  if (memptr == (VOID *) NULL) {
+void *trimalloc(size_t size) {
+  void *memptr;
+  memptr = (void *) malloc(size);
+  if (memptr == nullptr) {
     printf("Error:  Out of memory.\n");
     triexit(1);
   }
-  return(memptr);
+  return memptr;
 }
 
-#ifdef ANSI_DECLARATORS
-void trifree(VOID *memptr)
-#else /* not ANSI_DECLARATORS */
-void trifree(memptr)
-VOID *memptr;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void trifree(void *memptr) {
   free(memptr);
 }
 
@@ -11105,10 +11085,10 @@ struct behavior *b;
 #ifdef TRILIBRARY
 
 #ifdef ANSI_DECLARATORS
-int reconstruct(struct mesh *m, struct behavior *b, int *trianglelist,
-                REAL *triangleattriblist, REAL *trianglearealist,
+int reconstruct(struct mesh *m, struct behavior *b, std::shared_ptr<int[]> trianglelist,
+                std::shared_ptr<REAL[]> triangleattriblist, std::shared_ptr<REAL[]> trianglearealist,
                 int elements, int corners, int attribs,
-                int *segmentlist,int *segmentmarkerlist, int numberofsegments)
+                std::shared_ptr<int[]> segmentlist, std::shared_ptr<int[]> segmentmarkerlist, int numberofsegments)
 #else /* not ANSI_DECLARATORS */
 int reconstruct(m, b, trianglelist, triangleattriblist, trianglearealist,
                 elements, corners, attribs, segmentlist, segmentmarkerlist,
@@ -11236,7 +11216,7 @@ FILE *polyfile;
   if (b->poly) {
 #ifdef TRILIBRARY
     m->insegments = numberofsegments;
-    segmentmarkers = segmentmarkerlist != (int *) NULL;
+    segmentmarkers = segmentmarkerlist.get() != (int *) NULL;
 #else /* not TRILIBRARY */
     /* Read number of segments and number of segment */
     /*   boundary markers from .poly file.           */
@@ -12441,8 +12421,8 @@ struct behavior *b;
 #ifdef TRILIBRARY
 
 #ifdef ANSI_DECLARATORS
-void formskeleton(struct mesh *m, struct behavior *b, int *segmentlist,
-                  int *segmentmarkerlist, int numberofsegments)
+void formskeleton(struct mesh *m, struct behavior *b, std::shared_ptr<int[]> segmentlist,
+                  std::shared_ptr<int[]> segmentmarkerlist, int numberofsegments)
 #else /* not ANSI_DECLARATORS */
 void formskeleton(m, b, segmentlist, segmentmarkerlist, numberofsegments)
 struct mesh *m;
@@ -12488,7 +12468,7 @@ char *polyfilename;
 #ifdef TRILIBRARY
     strcpy(polyfilename, "input");
     m->insegments = numberofsegments;
-    segmentmarkers = segmentmarkerlist != (int *) NULL;
+    segmentmarkers = segmentmarkerlist.get() != (int *) NULL;
     index = 0;
 #else /* not TRILIBRARY */
     /* Read the segments from a .poly file. */
@@ -13013,8 +12993,8 @@ REAL area;
 /*****************************************************************************/
 
 #ifdef ANSI_DECLARATORS
-void carveholes(struct mesh *m, struct behavior *b, REAL *holelist, int holes,
-                REAL *regionlist, int regions)
+void carveholes(struct mesh *m, struct behavior *b, std::shared_ptr<REAL[]> holelist, int holes,
+                std::shared_ptr<REAL[]> regionlist, int regions)
 #else /* not ANSI_DECLARATORS */
 void carveholes(m, b, holelist, holes, regionlist, regions)
 struct mesh *m;
@@ -14117,8 +14097,8 @@ FILE **polyfile;
 #ifdef TRILIBRARY
 
 #ifdef ANSI_DECLARATORS
-void transfernodes(struct mesh *m, struct behavior *b, REAL *pointlist,
-                   REAL *pointattriblist, int *pointmarkerlist,
+void transfernodes(struct mesh *m, struct behavior *b, std::shared_ptr<REAL[]> pointlist,
+                   std::shared_ptr<REAL[]> pointattriblist, std::shared_ptr<int[]> pointmarkerlist,
                    int numberofpoints, int numberofpointattribs)
 #else /* not ANSI_DECLARATORS */
 void transfernodes(m, b, pointlist, pointattriblist, pointmarkerlist,
@@ -14165,7 +14145,7 @@ int numberofpointattribs;
     for (j = 0; j < numberofpointattribs; j++) {
       vertexloop[2 + j] = pointattriblist[attribindex++];
     }
-    if (pointmarkerlist != (int *) NULL) {
+    if (pointmarkerlist.get() != (int *) NULL) {
       /* Read a vertex marker. */
       setvertexmark(vertexloop, pointmarkerlist[i]);
     } else {
@@ -14203,8 +14183,8 @@ int numberofpointattribs;
 
 #ifdef ANSI_DECLARATORS
 void readholes(struct mesh *m, struct behavior *b,
-               FILE *polyfile, char *polyfilename, REAL **hlist, int *holes,
-               REAL **rlist, int *regions)
+               FILE *polyfile, char *polyfilename, std::shared_ptr<REAL[]> *hlist, int *holes,
+               std::shared_ptr<REAL[]> *rlist, int *regions)
 #else /* not ANSI_DECLARATORS */
 void readholes(m, b, polyfile, polyfilename, hlist, holes, rlist, regions)
 struct mesh *m;
@@ -14218,8 +14198,8 @@ int *regions;
 #endif /* not ANSI_DECLARATORS */
 
 {
-  REAL *holelist;
-  REAL *regionlist;
+  std::shared_ptr<REAL[]> holelist;
+  std::shared_ptr<REAL[]> regionlist;
   char inputline[INPUTLINESIZE];
   char *stringptr;
   int index;
@@ -14229,7 +14209,7 @@ int *regions;
   stringptr = readline(inputline, polyfile, polyfilename);
   *holes = (int) strtol(stringptr, &stringptr, 0);
   if (*holes > 0) {
-    holelist = (REAL *) trimalloc(2 * *holes * (int) sizeof(REAL));
+    holelist =  std::shared_ptr<REAL[]>((REAL *) trimalloc(2 * *holes * (int) sizeof(REAL)));
     *hlist = holelist;
     for (i = 0; i < 2 * *holes; i += 2) {
       stringptr = readline(inputline, polyfile, polyfilename);
@@ -14251,7 +14231,7 @@ int *regions;
       }
     }
   } else {
-    *hlist = (REAL *) NULL;
+    *hlist = std::shared_ptr<REAL[]>(nullptr);
   }
 
 #ifndef CDT_ONLY
@@ -14260,7 +14240,7 @@ int *regions;
     stringptr = readline(inputline, polyfile, polyfilename);
     *regions = (int) strtol(stringptr, &stringptr, 0);
     if (*regions > 0) {
-      regionlist = (REAL *) trimalloc(4 * *regions * (int) sizeof(REAL));
+      regionlist = std::shared_ptr<REAL[]>((REAL *) trimalloc(4 * *regions * (int) sizeof(REAL)));
       *rlist = regionlist;
       index = 0;
       for (i = 0; i < *regions; i++) {
@@ -14302,7 +14282,7 @@ int *regions;
   } else {
     /* Set `*regions' to zero to avoid an accidental free() later. */
     *regions = 0;
-    *rlist = (REAL *) NULL;
+    *rlist = std::shared_ptr<REAL[]>(nullptr);
   }
 #endif /* not CDT_ONLY */
 
@@ -14355,8 +14335,8 @@ char **argv;
 #ifdef TRILIBRARY
 
 #ifdef ANSI_DECLARATORS
-void writenodes(struct mesh *m, struct behavior *b, REAL **pointlist,
-                REAL **pointattriblist, int **pointmarkerlist)
+void writenodes(struct mesh *m, struct behavior *b, std::shared_ptr<REAL[]> *pointlist,
+                std::shared_ptr<REAL[]> *pointattriblist, std::shared_ptr<int[]> *pointmarkerlist)
 #else /* not ANSI_DECLARATORS */
 void writenodes(m, b, pointlist, pointattriblist, pointmarkerlist)
 struct mesh *m;
@@ -14384,9 +14364,9 @@ char **argv;
 
 {
 #ifdef TRILIBRARY
-  REAL *plist;
-  REAL *palist;
-  int *pmlist;
+  std::shared_ptr<REAL[]> plist;
+  std::shared_ptr<REAL[]> palist;
+  std::shared_ptr<int[]> pmlist;
   int coordindex;
   int attribindex;
 #else /* not TRILIBRARY */
@@ -14408,17 +14388,16 @@ char **argv;
     printf("Writing vertices.\n");
   }
   /* Allocate memory for output vertices if necessary. */
-  if (*pointlist == (REAL *) NULL) {
-    *pointlist = (REAL *) trimalloc((int) (outvertices * 2 * sizeof(REAL)));
+  if (pointlist->get() == (REAL *) NULL) {
+    *pointlist = std::shared_ptr<REAL[]>((REAL *) trimalloc((size_t) (outvertices * 2 * sizeof(REAL))));
   }
   /* Allocate memory for output vertex attributes if necessary. */
-  if ((m->nextras > 0) && (*pointattriblist == (REAL *) NULL)) {
-    *pointattriblist = (REAL *) trimalloc((int) (outvertices * m->nextras *
-                                                 sizeof(REAL)));
+  if ((m->nextras > 0) && (pointattriblist->get() == (REAL *) NULL)) {
+    *pointattriblist = std::shared_ptr<REAL[]>((REAL *) trimalloc((size_t) (outvertices * m->nextras *sizeof(REAL))));
   }
   /* Allocate memory for output vertex markers if necessary. */
-  if (!b->nobound && (*pointmarkerlist == (int *) NULL)) {
-    *pointmarkerlist = (int *) trimalloc((int) (outvertices * sizeof(int)));
+  if (!b->nobound && (pointmarkerlist->get() == (int *) NULL)) {
+    *pointmarkerlist = std::shared_ptr<int[]>((int *) trimalloc((int) (outvertices * sizeof(int))));
   }
   plist = *pointlist;
   palist = *pointattriblist;
@@ -14528,7 +14507,7 @@ struct behavior *b;
 
 #ifdef ANSI_DECLARATORS
 void writeelements(struct mesh *m, struct behavior *b,
-                   int **trianglelist, REAL **triangleattriblist)
+                   std::shared_ptr<int[]> *trianglelist, std::shared_ptr<REAL[]> *triangleattriblist)
 #else /* not ANSI_DECLARATORS */
 void writeelements(m, b, trianglelist, triangleattriblist)
 struct mesh *m;
@@ -14555,8 +14534,8 @@ char **argv;
 
 {
 #ifdef TRILIBRARY
-  int *tlist;
-  REAL *talist;
+  std::shared_ptr<int[]> tlist;
+  std::shared_ptr<REAL[]> talist;
   int vertexindex;
   int attribindex;
 #else /* not TRILIBRARY */
@@ -14573,16 +14552,12 @@ char **argv;
     printf("Writing triangles.\n");
   }
   /* Allocate memory for output triangles if necessary. */
-  if (*trianglelist == (int *) NULL) {
-    *trianglelist = (int *) trimalloc((int) (m->triangles.items *
-                                             ((b->order + 1) * (b->order + 2) /
-                                              2) * sizeof(int)));
+  if (trianglelist->get() == (int *) NULL) {
+    *trianglelist = std::shared_ptr<int[]>((int *) trimalloc((int) (m->triangles.items * ((b->order + 1) * (b->order + 2) / 2) * sizeof(int))));
   }
   /* Allocate memory for output triangle attributes if necessary. */
-  if ((m->eextras > 0) && (*triangleattriblist == (REAL *) NULL)) {
-    *triangleattriblist = (REAL *) trimalloc((int) (m->triangles.items *
-                                                    m->eextras *
-                                                    sizeof(REAL)));
+  if ((m->eextras > 0) && (triangleattriblist->get() == (REAL *) NULL)) {
+    *triangleattriblist = std::shared_ptr<REAL[]>((REAL *) trimalloc((int) (m->triangles.items * m->eextras * sizeof(REAL))));
   }
   tlist = *trianglelist;
   talist = *triangleattriblist;
@@ -14669,7 +14644,7 @@ char **argv;
 
 #ifdef ANSI_DECLARATORS
 void writepoly(struct mesh *m, struct behavior *b,
-               int **segmentlist, int **segmentmarkerlist)
+               std::shared_ptr<int[]> *segmentlist, std::shared_ptr<int[]> *segmentmarkerlist)
 #else /* not ANSI_DECLARATORS */
 void writepoly(m, b, segmentlist, segmentmarkerlist)
 struct mesh *m;
@@ -14682,7 +14657,7 @@ int **segmentmarkerlist;
 
 #ifdef ANSI_DECLARATORS
 void writepoly(struct mesh *m, struct behavior *b, char *polyfilename,
-               REAL *holelist, int holes, REAL *regionlist, int regions,
+               std::shared_ptr<REAL[]> holelist, int holes, std::shared_ptr<REAL[]> regionlist, int regions,
                int argc, char **argv)
 #else /* not ANSI_DECLARATORS */
 void writepoly(m, b, polyfilename, holelist, holes, regionlist, regions,
@@ -14702,8 +14677,8 @@ char **argv;
 
 {
 #ifdef TRILIBRARY
-  int *slist;
-  int *smlist;
+  std::shared_ptr<int[]> slist;
+  std::shared_ptr<int[]> smlist;
   int index;
 #else /* not TRILIBRARY */
   FILE *outfile;
@@ -14718,14 +14693,12 @@ char **argv;
     printf("Writing segments.\n");
   }
   /* Allocate memory for output segments if necessary. */
-  if (*segmentlist == (int *) NULL) {
-    *segmentlist = (int *) trimalloc((int) (m->subsegs.items * 2 *
-                                            sizeof(int)));
+  if (segmentlist->get() == (int *) NULL) {
+    *segmentlist = std::shared_ptr<int[]>((int *) trimalloc((int) (m->subsegs.items * 2 * sizeof(int))));
   }
   /* Allocate memory for output segment markers if necessary. */
-  if (!b->nobound && (*segmentmarkerlist == (int *) NULL)) {
-    *segmentmarkerlist = (int *) trimalloc((int) (m->subsegs.items *
-                                                  sizeof(int)));
+  if (!b->nobound && (segmentmarkerlist->get() == (int *) NULL)) {
+    *segmentmarkerlist = std::shared_ptr<int[]>((int *) trimalloc((int) (m->subsegs.items * sizeof(int))));
   }
   slist = *segmentlist;
   smlist = *segmentmarkerlist;
@@ -14815,7 +14788,7 @@ char **argv;
 
 #ifdef ANSI_DECLARATORS
 void writeedges(struct mesh *m, struct behavior *b,
-                int **edgelist, int **edgemarkerlist)
+                std::shared_ptr<int[]> *edgelist, std::shared_ptr<int[]> *edgemarkerlist)
 #else /* not ANSI_DECLARATORS */
 void writeedges(m, b, edgelist, edgemarkerlist)
 struct mesh *m;
@@ -14842,8 +14815,8 @@ char **argv;
 
 {
 #ifdef TRILIBRARY
-  int *elist;
-  int *emlist;
+  std::shared_ptr<int[]> elist;
+  std::shared_ptr<int[]> emlist;
   int index;
 #else /* not TRILIBRARY */
   FILE *outfile;
@@ -14860,12 +14833,12 @@ char **argv;
     printf("Writing edges.\n");
   }
   /* Allocate memory for edges if necessary. */
-  if (*edgelist == (int *) NULL) {
-    *edgelist = (int *) trimalloc((int) (m->edges * 2 * sizeof(int)));
+  if (edgelist->get() == (int *) NULL) {
+    *edgelist = std::shared_ptr<int[]>((int *) trimalloc((int) (m->edges * 2 * sizeof(int))));
   }
   /* Allocate memory for edge markers if necessary. */
-  if (!b->nobound && (*edgemarkerlist == (int *) NULL)) {
-    *edgemarkerlist = (int *) trimalloc((int) (m->edges * sizeof(int)));
+  if (!b->nobound && (edgemarkerlist->get() == (int *) NULL)) {
+    *edgemarkerlist = std::shared_ptr<int[]>((int *) trimalloc((int) (m->edges * sizeof(int))));
   }
   elist = *edgelist;
   emlist = *edgemarkerlist;
@@ -14968,9 +14941,9 @@ char **argv;
 #ifdef TRILIBRARY
 
 #ifdef ANSI_DECLARATORS
-void writevoronoi(struct mesh *m, struct behavior *b, REAL **vpointlist,
-                  REAL **vpointattriblist, int **vpointmarkerlist,
-                  int **vedgelist, int **vedgemarkerlist, REAL **vnormlist)
+void writevoronoi(struct mesh *m, struct behavior *b, std::shared_ptr<REAL[]> *vpointlist,
+                  std::shared_ptr<REAL[]> *vpointattriblist, std::shared_ptr<int[]> *vpointmarkerlist,
+                  std::shared_ptr<int[]> *vedgelist, std::shared_ptr<int[]> *vedgemarkerlist, std::shared_ptr<REAL[]> *vnormlist)
 #else /* not ANSI_DECLARATORS */
 void writevoronoi(m, b, vpointlist, vpointattriblist, vpointmarkerlist,
                   vedgelist, vedgemarkerlist, vnormlist)
@@ -15003,10 +14976,10 @@ char **argv;
 
 {
 #ifdef TRILIBRARY
-  REAL *plist;
-  REAL *palist;
-  int *elist;
-  REAL *normlist;
+  std::shared_ptr<REAL[]> plist;
+  std::shared_ptr<REAL[]> palist;
+  std::shared_ptr<int[]> elist;
+  std::shared_ptr<REAL[]> normlist;
   int coordindex;
   int attribindex;
 #else /* not TRILIBRARY */
@@ -15026,16 +14999,15 @@ char **argv;
     printf("Writing Voronoi vertices.\n");
   }
   /* Allocate memory for Voronoi vertices if necessary. */
-  if (*vpointlist == (REAL *) NULL) {
-    *vpointlist = (REAL *) trimalloc((int) (m->triangles.items * 2 *
-                                            sizeof(REAL)));
+  if (vpointlist->get() == (REAL *) NULL) {
+    *vpointlist = std::shared_ptr<REAL[]>((REAL *) trimalloc((size_t) (m->triangles.items * 2 * sizeof(REAL))));
   }
   /* Allocate memory for Voronoi vertex attributes if necessary. */
-  if (*vpointattriblist == (REAL *) NULL) {
-    *vpointattriblist = (REAL *) trimalloc((int) (m->triangles.items *
-                                                  m->nextras * sizeof(REAL)));
+  if (vpointattriblist->get() == (REAL *) NULL) {
+    *vpointattriblist = std::shared_ptr<REAL[]>((REAL *) trimalloc((size_t) (m->triangles.items *
+                                                  m->nextras * sizeof(REAL))));
   }
-  *vpointmarkerlist = (int *) NULL;
+  *vpointmarkerlist = std::shared_ptr<int[]>(nullptr);
   plist = *vpointlist;
   palist = *vpointattriblist;
   coordindex = 0;
@@ -15098,13 +15070,13 @@ char **argv;
     printf("Writing Voronoi edges.\n");
   }
   /* Allocate memory for output Voronoi edges if necessary. */
-  if (*vedgelist == (int *) NULL) {
-    *vedgelist = (int *) trimalloc((int) (m->edges * 2 * sizeof(int)));
+  if (vedgelist->get() == (int *) NULL) {
+    *vedgelist = std::shared_ptr<int[]>((int *) trimalloc((int) (m->edges * 2 * sizeof(int))));
   }
-  *vedgemarkerlist = (int *) NULL;
+  *vedgemarkerlist = std::shared_ptr<int[]>(nullptr);
   /* Allocate memory for output Voronoi norms if necessary. */
-  if (*vnormlist == (REAL *) NULL) {
-    *vnormlist = (REAL *) trimalloc((int) (m->edges * 2 * sizeof(REAL)));
+  if (vnormlist->get() == (REAL *) NULL) {
+    *vnormlist = std::shared_ptr<REAL[]>((REAL *) trimalloc((int) (m->edges * 2 * sizeof(REAL))));
   }
   elist = *vedgelist;
   normlist = *vnormlist;
@@ -15181,7 +15153,7 @@ char **argv;
 #ifdef TRILIBRARY
 
 #ifdef ANSI_DECLARATORS
-void writeneighbors(struct mesh *m, struct behavior *b, int **neighborlist)
+void writeneighbors(struct mesh *m, struct behavior *b, std::shared_ptr<int[]> *neighborlist)
 #else /* not ANSI_DECLARATORS */
 void writeneighbors(m, b, neighborlist)
 struct mesh *m;
@@ -15207,7 +15179,7 @@ char **argv;
 
 {
 #ifdef TRILIBRARY
-  int *nlist;
+  std::shared_ptr<int[]> nlist;
   int index;
 #else /* not TRILIBRARY */
   FILE *outfile;
@@ -15222,9 +15194,8 @@ char **argv;
     printf("Writing neighbors.\n");
   }
   /* Allocate memory for neighbors if necessary. */
-  if (*neighborlist == (int *) NULL) {
-    *neighborlist = (int *) trimalloc((int) (m->triangles.items * 3 *
-                                             sizeof(int)));
+  if (neighborlist->get() == (int *) NULL) {
+    *neighborlist = std::shared_ptr<int[]>((int *) trimalloc((int) (m->triangles.items * 3 * sizeof(int))));
   }
   nlist = *neighborlist;
   index = 0;
@@ -15726,8 +15697,8 @@ char **argv;
 {
   struct mesh m;
   struct behavior b;
-  REAL *holearray;                                        /* Array of holes. */
-  REAL *regionarray;   /* Array of regional attributes and area constraints. */
+  std::shared_ptr<REAL[]> holearray;                                        /* Array of holes. */
+  std::shared_ptr<REAL[]> regionarray;   /* Array of regional attributes and area constraints. */
 #ifndef TRILIBRARY
   FILE *polyfile;
 #endif /* not TRILIBRARY */
@@ -15967,8 +15938,8 @@ char **argv;
         out->holelist = in->holelist;
         out->regionlist = in->regionlist;
       } else {
-        out->holelist = (REAL *) NULL;
-        out->regionlist = (REAL *) NULL;
+        out->holelist = std::shared_ptr<REAL[]>((REAL *) NULL);
+        out->regionlist = std::shared_ptr<REAL[]>((REAL *) NULL);
       }
 #else /* not TRILIBRARY */
       writepoly(&m, &b, b.outpolyfilename, holearray, m.holes, regionarray,
@@ -15978,13 +15949,19 @@ char **argv;
   }
 #ifndef TRILIBRARY
 #ifndef CDT_ONLY
-  if (m.regions > 0) {
-    trifree((VOID *) regionarray);
-  }
+  /**
+   *  Removed for smart pointer support.
+   **/
+  // if (m.regions > 0) {
+  //   trifree((VOID *) regionarray);
+  // }
 #endif /* not CDT_ONLY */
-  if (m.holes > 0) {
-    trifree((VOID *) holearray);
-  }
+  /**
+   *  Removed for smart pointer support.
+   **/
+  // if (m.holes > 0) {
+  //   trifree((VOID *) holearray);
+  // }
   if (b.geomview) {
     writeoff(&m, &b, b.offfilename, argc, argv);
   }

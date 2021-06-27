@@ -1,0 +1,12 @@
+build/*
+CMake**
+.vscode
+*.a
+*.so
+triangle
+triangle_exec
+*.poly
+*.ele
+*.node
+cmake**
+Makefile**

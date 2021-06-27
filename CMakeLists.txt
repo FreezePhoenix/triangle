@@ -1,25 +1,8 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required (VERSION 3.5)
 project(triangle)
+add_definitions(-std=c++20 -O4)
 
-option(BUILD_EXECUTABLE "Build triangle executable" OFF)
-option(BUILD_LIBRARY    "Build libtriangle library" ON)
-
-if(BUILD_LIBRARY)
-  add_library(triangle STATIC triangle.cpp)
-  target_compile_definitions(triangle PRIVATE -DTRILIBRARY -DANSI_DECLARATORS)
-  if(WIN32)
-    target_compile_definitions(triangle PRIVATE -DNO_TIMER)
-  endif()
-  # Generate position independent code
-  set_target_properties(triangle PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
-
-
-if(BUILD_EXECUTABLE)
-  add_executable(triangle_exec triangle.cpp)
-  target_compile_definitions(triangle_exec PRIVATE -DANSI_DECLARATORS)
-  if(WIN32)
-    target_compile_definitions(triangle_exec PRIVATE -DNO_TIMER)
-  endif()
-  set_target_properties(triangle_exec PROPERTIES OUTPUT_NAME triangle)
-endif()
+add_library(triangle STATIC triangle.cpp)
+add_executable(triangle_exec triangle.cpp)
+set_target_properties(triangle_exec PROPERTIES OUTPUT_NAME triangle)
+set_property(TARGET triangle PROPERTY COMPILE_OPTIONS -DTRILIBRARY)
