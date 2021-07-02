@@ -249,39 +249,49 @@
 /*****************************************************************************/
 
 #include <memory>
-
+struct free_delete {
+  inline void operator()(void* x) {
+    free(x);
+  }
+};
 struct triangulateio {
-  std::shared_ptr<REAL[]> pointlist;                                               /* In / out */
-  std::shared_ptr<REAL[]> pointattributelist;                                      /* In / out */
-  std::shared_ptr<int[]> pointmarkerlist;                                          /* In / out */
-  int numberofpoints;                                            /* In / out */
-  int numberofpointattributes;                                   /* In / out */
+  std::shared_ptr<REAL> pointlist;                                               /* In / out */
+  std::shared_ptr<REAL> pointattributelist;                                      /* In / out */
+  std::shared_ptr<int> pointmarkerlist;                                          /* In / out */
+  unsigned int numberofpoints;                                            /* In / out */
+  unsigned int numberofpointattributes;                                   /* In / out */
 
-  std::shared_ptr<int[]> trianglelist;                                             /* In / out */
-  std::shared_ptr<REAL[]> triangleattributelist;                                   /* In / out */
-  std::shared_ptr<REAL[]> trianglearealist;                                         /* In only */
-  std::shared_ptr<int[]> neighborlist;                                             /* Out only */
-  int numberoftriangles;                                         /* In / out */
-  int numberofcorners;                                           /* In / out */
-  int numberoftriangleattributes;                                /* In / out */
+  std::shared_ptr<int> trianglelist;                                             /* In / out */
+  std::shared_ptr<REAL> triangleattributelist;                                   /* In / out */
+  std::shared_ptr<REAL> trianglearealist;                                         /* In only */
+  std::shared_ptr<int> neighborlist;                                             /* Out only */
+  unsigned int numberoftriangles;                                         /* In / out */
+  unsigned int numberofcorners;                                           /* In / out */
+  unsigned int numberoftriangleattributes;                                /* In / out */
 
-  std::shared_ptr<int[]> segmentlist;                                              /* In / out */
-  std::shared_ptr<int[]> segmentmarkerlist;                                        /* In / out */
-  int numberofsegments;                                          /* In / out */
+  std::shared_ptr<int> segmentlist;                                              /* In / out */
+  std::shared_ptr<int> segmentmarkerlist;                                        /* In / out */
+  unsigned int numberofsegments;                                          /* In / out */
 
-  std::shared_ptr<REAL[]> holelist;                        /* In / pointer to array copied out */
-  int numberofholes;                                      /* In / copied out */
+  std::shared_ptr<REAL> holelist;                        /* In / pointer to array copied out */
+  unsigned int numberofholes;                                      /* In / copied out */
 
-  std::shared_ptr<REAL[]> regionlist;                      /* In / pointer to array copied out */
-  int numberofregions;                                    /* In / copied out */
+  std::shared_ptr<REAL> regionlist;                      /* In / pointer to array copied out */
+  unsigned int numberofregions;                                    /* In / copied out */
 
-  std::shared_ptr<int[]> edgelist;                                                 /* Out only */
-  std::shared_ptr<int[]> edgemarkerlist;            /* Not used with Voronoi diagram; out only */
-  std::shared_ptr<REAL[]> normlist;                /* Used only with Voronoi diagram; out only */
-  int numberofedges;                                             /* Out only */
+  std::shared_ptr<int> edgelist;                                                 /* Out only */
+  std::shared_ptr<int> edgemarkerlist;            /* Not used with Voronoi diagram; out only */
+  std::shared_ptr<REAL> normlist;                /* Used only with Voronoi diagram; out only */
+  unsigned int numberofedges;                                             /* Out only */
 };
 
-void triangulate(char *, struct triangulateio *, struct triangulateio *,
-                 struct triangulateio *);
-void trifree(VOID *memptr);
+void triangulate(char *, std::shared_ptr<triangulateio>, std::shared_ptr<triangulateio>,
+                 std::shared_ptr<triangulateio>);
+void trifree(void *memptr);
 
+template<typename T>
+std::shared_ptr<T> trimalloc(std::size_t size) {
+  return std::shared_ptr<T>((T*)malloc(size * sizeof(T)), [](T* ptr) {
+    free(ptr);
+  });
+}
