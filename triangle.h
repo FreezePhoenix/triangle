@@ -264,31 +264,31 @@ struct triangulateio {
   std::shared_ptr<REAL> pointlist;                                               /* In / out */
   std::shared_ptr<REAL> pointattributelist;                                      /* In / out */
   std::shared_ptr<int> pointmarkerlist;                                          /* In / out */
-  std::size_t numberofpoints;                                            /* In / out */
-  std::size_t  numberofpointattributes;                                   /* In / out */
+  unsigned int numberofpoints;                                            /* In / out */
+  unsigned int  numberofpointattributes;                                   /* In / out */
 
-  std::shared_ptr<int> trianglelist;                                             /* In / out */
+  std::shared_ptr<unsigned int> trianglelist;                                             /* In / out */
   std::shared_ptr<REAL> triangleattributelist;                                   /* In / out */
   std::shared_ptr<REAL> trianglearealist;                                         /* In only */
   std::shared_ptr<int> neighborlist;                                             /* Out only */
-  std::size_t  numberoftriangles;                                         /* In / out */
-  std::size_t  numberofcorners;                                           /* In / out */
-  std::size_t  numberoftriangleattributes;                                /* In / out */
+  unsigned int  numberoftriangles;                                         /* In / out */
+  unsigned int  numberofcorners;                                           /* In / out */
+  unsigned int  numberoftriangleattributes;                                /* In / out */
 
   std::shared_ptr<int> segmentlist;                                              /* In / out */
   std::shared_ptr<int> segmentmarkerlist;                                        /* In / out */
-  std::size_t  numberofsegments;                                          /* In / out */
+  unsigned int  numberofsegments;                                          /* In / out */
 
   std::shared_ptr<REAL> holelist;                        /* In / pointer to array copied out */
-  std::size_t  numberofholes;                                      /* In / copied out */
+  unsigned int  numberofholes;                                      /* In / copied out */
 
   std::shared_ptr<REAL> regionlist;                      /* In / pointer to array copied out */
-  std::size_t  numberofregions;                                    /* In / copied out */
+  unsigned int  numberofregions;                                    /* In / copied out */
 
   std::shared_ptr<int> edgelist;                                                 /* Out only */
   std::shared_ptr<int> edgemarkerlist;            /* Not used with Voronoi diagram; out only */
   std::shared_ptr<REAL> normlist;                /* Used only with Voronoi diagram; out only */
-  std::size_t  numberofedges;                                             /* Out only */
+  unsigned int  numberofedges;                                             /* Out only */
 };
 
 void triangulate(char *, std::shared_ptr<triangulateio>, std::shared_ptr<triangulateio>,
