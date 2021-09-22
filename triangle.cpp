@@ -3638,22 +3638,12 @@ void parsecommandline(int argc, char** argv, struct behavior* b) {
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void printtriangle(struct mesh* m, struct behavior* b, struct otri* t)
-#else /* not ANSI_DECLARATORS */
-void printtriangle(m, b, t)
-struct mesh* m;
-struct behavior* b;
-struct otri* t;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void printtriangle(struct mesh* m, struct behavior* b, struct otri* t) {
   struct otri printtri;
   struct osub printsh;
   vertex printvertex;
 
-  printf("triangle x%lx with orientation %d:\n", (unsigned long)t->tri,
-         t->orient);
+  printf("triangle x%lx with orientation %d:\n", (unsigned long)t->tri, t->orient);
   decode(t->tri[0], printtri);
   if (printtri.tri == m->dummytri) {
     printf("    [0] = Outer space\n");
@@ -3732,22 +3722,12 @@ struct otri* t;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void printsubseg(struct mesh* m, struct behavior* b, struct osub* s)
-#else /* not ANSI_DECLARATORS */
-void printsubseg(m, b, s)
-struct mesh* m;
-struct behavior* b;
-struct osub* s;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void printsubseg(struct mesh* m, struct behavior* b, struct osub* s) {
   struct osub printsh;
   struct otri printtri;
   vertex printvertex;
 
-  printf("subsegment x%lx with orientation %d and mark %d:\n",
-         (unsigned long)s->ss, s->ssorient, mark(*s));
+  printf("subsegment x%lx with orientation %d and mark %d:\n", (unsigned long)s->ss, s->ssorient, mark(*s));
   sdecode(s->ss[0], printsh);
   if (printsh.ss == m->dummysub) {
     printf("    [0] = No subsegment\n");
@@ -3826,14 +3806,7 @@ struct osub* s;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void poolzero(struct memorypool& pool)
-#else /* not ANSI_DECLARATORS */
-void poolzero(pool)
-struct memorypool* pool;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void poolzero(struct memorypool& pool) {
   pool.firstblock = (VOID**)NULL;
   pool.nowblock = (VOID**)NULL;
   pool.nextitem = (VOID*)NULL;
