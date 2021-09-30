@@ -8,4 +8,6 @@ add_library(triangle STATIC
 target_include_directories(triangle PUBLIC include src)
 set_property(TARGET triangle PROPERTY COMPILE_OPTIONS -DTRILIBRARY)
 add_executable(triangle_exec triangle.cpp)
+add_executable(showme showme.c)
+target_link_libraries(showme PUBLIC X11)
 set_target_properties(triangle_exec PROPERTIES OUTPUT_NAME triangle)

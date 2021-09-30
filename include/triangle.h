@@ -291,7 +291,7 @@ struct triangulateio {
   unsigned int  numberofedges;                                             /* Out only */
 };
 
-void triangulate(char *, std::shared_ptr<triangulateio>, std::shared_ptr<triangulateio>,
+void triangulate(const char *, std::shared_ptr<triangulateio>, std::shared_ptr<triangulateio>,
                  std::shared_ptr<triangulateio>);
 void trifree(void *memptr);
 
