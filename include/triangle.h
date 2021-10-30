@@ -271,6 +271,8 @@ struct triangulateio {
   std::shared_ptr<REAL> triangleattributelist;                                   /* In / out */
   std::shared_ptr<REAL> trianglearealist;                                         /* In only */
   std::shared_ptr<int> neighborlist;                                             /* Out only */
+  std::shared_ptr<int> subdomainlist;
+  unsigned int  numberofsubdomains;                                               /* Out only */
   unsigned int  numberoftriangles;                                         /* In / out */
   unsigned int  numberofcorners;                                           /* In / out */
   unsigned int  numberoftriangleattributes;                                /* In / out */
