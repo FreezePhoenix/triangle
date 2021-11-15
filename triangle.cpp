@@ -1,4 +1,12 @@
 #include <memory>
+
+#ifndef REAL
+#define REAL double
+#endif
+
+typedef REAL realx2_t __attribute__((__vector_size__(sizeof(REAL) * 2)));
+typedef long longx2_t __attribute__((__vector_size__(sizeof(REAL) * 2)));
+
 #define ANSI_DECLARATORS
 /*****************************************************************************/
 /*                                                                           */
@@ -368,6 +376,13 @@
 
 template<typename T>
 inline std::shared_ptr<T> trimalloc(std::size_t size) {
+  return std::shared_ptr<T>((T*)malloc(size * sizeof(T)), [](T* ptr) {
+    free(ptr);
+  });
+}
+
+template<typename T>
+std::shared_ptr<T> trimallocarr(std::size_t size) {
   return std::shared_ptr<T>((T*)malloc(size * sizeof(T)), [](T* ptr) {
     free(ptr);
   });
@@ -4524,16 +4539,7 @@ struct badsubseg* badsubsegtraverse(m)
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-vertex getvertex(struct mesh* m, struct behavior* b, int number)
-#else /* not ANSI_DECLARATORS */
-vertex getvertex(m, b, number)
-struct mesh* m;
-struct behavior* b;
-int number;
-#endif /* not ANSI_DECLARATORS */
-
-{
+vertex getvertex(struct mesh* m, struct behavior* b, int number) {
   VOID** getblock;
   char* foundvertex;
   INT_PTR alignptr = 0;
@@ -4606,16 +4612,7 @@ struct behavior* b;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void maketriangle(struct mesh* m, struct behavior* b, struct otri* newotri)
-#else /* not ANSI_DECLARATORS */
-void maketriangle(m, b, newotri)
-struct mesh* m;
-struct behavior* b;
-struct otri* newotri;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void maketriangle(struct mesh* m, struct behavior* b, struct otri* newotri) {
   int i;
 
   newotri->tri = (triangle*)poolalloc(&m->triangles);
@@ -4650,15 +4647,7 @@ struct otri* newotri;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void makesubseg(struct mesh* m, struct osub* newsubseg)
-#else /* not ANSI_DECLARATORS */
-void makesubseg(m, newsubseg)
-struct mesh* m;
-struct osub* newsubseg;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void makesubseg(struct mesh* m, struct osub* newsubseg) {
   newsubseg->ss = (subseg*)poolalloc(&m->subsegs);
   /* Initialize the two adjoining subsegments to be the omnipresent */
   /*   subsegment.                                                  */
@@ -4699,7 +4688,10 @@ struct osub* newsubseg;
 /*   forcing the value to be stored to memory (rather than be kept in the    */
 /*   register to which the optimizer assigned it).                           */
 
-#define Absolute(a)  ((a) >= 0.0 ? (a) : -(a))
+constexpr REAL Absolute(REAL a) {
+  return a >= 0.0 ? a : -a;
+}
+// #define Absolute(a)  ((a) >= 0.0 ? (a) : -(a))
 /* #define Absolute(a)  fabs(a) */
 
 /* Many of the operations are broken up into two pieces, a main part that    */
@@ -4734,12 +4726,29 @@ struct osub* newsubseg;
   x = (REAL) (a + b); \
   Two_Sum_Tail(a, b, x, y)
 
+inline void Two_Sum_Vec(realx2_t a, realx2_t b, realx2_t& x, realx2_t& y) {
+  x = (a + b);
+  realx2_t bvirt = (x - a);
+  realx2_t avirt = x - bvirt;
+  realx2_t bround = b - bvirt;
+  realx2_t around = a - avirt;
+  y = around + bround;
+}
+
 #define Two_Diff_Tail(a, b, x, y) \
   bvirt = (REAL) (a - x); \
   avirt = x + bvirt; \
   bround = bvirt - b; \
   around = a - avirt; \
   y = around + bround
+
+inline void Two_Diff_Tail_Vec(realx2_t a, realx2_t b, realx2_t& x, realx2_t& y) {
+  realx2_t bvirt = a - x;
+  realx2_t avirt = x + bvirt;
+  realx2_t bround = bvirt - b;
+  realx2_t around = a - avirt;
+  y = around + bround;
+};
 
 #define Two_Diff(a, b, x, y) \
   x = (REAL) (a - b); \
@@ -4762,6 +4771,24 @@ struct osub* newsubseg;
 #define Two_Product(a, b, x, y) \
   x = (REAL) (a * b); \
   Two_Product_Tail(a, b, x, y)
+
+
+inline void Two_Product_Vec(realx2_t a, realx2_t b, realx2_t& x, realx2_t& y) {
+  x = a * b;
+  realx2_t ahi, alo, bhi, blo, c, abig;
+  c = (splitter * a);
+  abig = (c - a);
+  ahi = c - abig;
+  alo = a - ahi;
+  c = (splitter * b);
+  abig = (c - b);
+  bhi = c - abig;
+  blo = b - bhi;
+  realx2_t err1 = x - (ahi * bhi);
+  realx2_t err2 = err1 - (alo * bhi);
+  realx2_t err3 = err2 - (ahi * blo);
+  y = (alo * blo) - err3;
+}
 
 /* Two_Product_Presplit() is Two_Product() where one of the inputs has       */
 /*   already been split.  Avoids redundant splitting.                        */
@@ -4786,12 +4813,29 @@ struct osub* newsubseg;
   x = (REAL) (a * a); \
   Square_Tail(a, x, y)
 
+inline void Square_Vec(realx2_t a, realx2_t x, realx2_t y) {
+  x = a * a;
+  realx2_t c = (splitter * a);
+  realx2_t abig = (c - a);
+  realx2_t ahi = c - abig;
+  realx2_t alo = a - ahi;
+  realx2_t err1 = x - (ahi * ahi);
+  realx2_t err3 = err1 - ((ahi + ahi) * alo);
+  y = (alo * alo) - err3;
+}
+
 /* Macros for summing expansions of various fixed lengths.  These are all    */
 /*   unrolled versions of Expansion_Sum().                                   */
 
 #define Two_One_Sum(a1, a0, b, x2, x1, x0) \
   Two_Sum(a0, b , _i, x0); \
   Two_Sum(a1, _i, x2, x1)
+
+inline void Two_One_Sum_Vec(realx2_t a1, realx2_t a0, realx2_t b, realx2_t x2, realx2_t x1, realx2_t x0) {
+  realx2_t _i = { 0, 0 };
+  Two_Sum_Vec(a0, b , _i, x0);
+  Two_Sum_Vec(a1, _i, x2, x1);
+}
 
 #define Two_One_Diff(a1, a0, b, x2, x1, x0) \
   Two_Diff(a0, b , _i, x0); \
@@ -4905,19 +4949,7 @@ static void exactinit() {
 /*                                                                           */
 /*****************************************************************************/
 
-static
-#ifdef ANSI_DECLARATORS
-int fast_expansion_sum_zeroelim(int elen, REAL* e, int flen, REAL* f, REAL* h)
-#else /* not ANSI_DECLARATORS */
-int fast_expansion_sum_zeroelim(elen, e, flen, f, h)  /* h cannot be e or f. */
-int elen;
-REAL* e;
-int flen;
-REAL* f;
-REAL* h;
-#endif /* not ANSI_DECLARATORS */
-
-{
+static int fast_expansion_sum_zeroelim(int elen, REAL* e, int flen, REAL* f, REAL* h) {
   REAL Q;
   INEXACT REAL Qnew;
   INEXACT REAL hh;
@@ -4929,7 +4961,7 @@ REAL* h;
   enow = e[0];
   fnow = f[0];
   eindex = findex = 0;
-  if ((fnow > enow) == (fnow > -enow)) {
+  if (fnow > std::abs(enow)) {
     Q = enow;
     enow = e[++eindex];
   } else {
@@ -4938,7 +4970,7 @@ REAL* h;
   }
   hindex = 0;
   if ((eindex < elen) && (findex < flen)) {
-    if ((fnow > enow) == (fnow > -enow)) {
+    if (fnow > std::abs(enow)) {
       Fast_Two_Sum(enow, Q, Qnew, hh);
       enow = e[++eindex];
     } else {
@@ -4950,7 +4982,7 @@ REAL* h;
       h[hindex++] = hh;
     }
     while ((eindex < elen) && (findex < flen)) {
-      if ((fnow > enow) == (fnow > -enow)) {
+      if (fnow > std::abs(enow)) {
         Two_Sum(Q, enow, Qnew, hh);
         enow = e[++eindex];
       } else {
@@ -5000,18 +5032,7 @@ REAL* h;
 /*                                                                           */
 /*****************************************************************************/
 
-static
-#ifdef ANSI_DECLARATORS
-int scale_expansion_zeroelim(int elen, REAL* e, REAL b, REAL* h)
-#else /* not ANSI_DECLARATORS */
-int scale_expansion_zeroelim(elen, e, b, h)   /* e and h cannot be the same. */
-int elen;
-REAL* e;
-REAL b;
-REAL* h;
-#endif /* not ANSI_DECLARATORS */
-
-{
+static int scale_expansion_zeroelim(int elen, REAL* e, REAL b, REAL* h) {
   INEXACT REAL Q, sum;
   REAL hh;
   INEXACT REAL product1;
@@ -5255,19 +5276,11 @@ vertex pc;
 /*                                                                           */
 /*****************************************************************************/
 
-static
-#ifdef ANSI_DECLARATORS
-REAL incircleadapt(vertex pa, vertex pb, vertex pc, vertex pd, REAL permanent)
-#else /* not ANSI_DECLARATORS */
-REAL incircleadapt(pa, pb, pc, pd, permanent)
-vertex pa;
-vertex pb;
-vertex pc;
-vertex pd;
-REAL permanent;
-#endif /* not ANSI_DECLARATORS */
-
-{
+static REAL incircleadapt(vertex pa, vertex pb, vertex pc, vertex pd, REAL permanent) {
+  realx2_t pa_vec = realx2_t{ pa[0], pa[1] };
+  realx2_t pb_vec = realx2_t{ pb[0], pb[1] };
+  realx2_t pc_vec = realx2_t{ pc[0], pc[1] };
+  realx2_t pd_vec = realx2_t{ pd[0], pd[1] };
   INEXACT REAL adx, bdx, cdx, ady, bdy, cdy;
   REAL det, errbound;
 
@@ -5287,7 +5300,6 @@ REAL permanent;
   REAL* finnow, * finother, * finswap;
   int finlength;
 
-  REAL adxtail, bdxtail, cdxtail, adytail, bdytail, cdytail;
   INEXACT REAL adxadx1, adyady1, bdxbdx1, bdybdy1, cdxcdx1, cdycdy1;
   REAL adxadx0, adyady0, bdxbdx0, bdybdy0, cdxcdx0, cdycdy0;
   REAL aa[4], bb[4], cc[4];
@@ -5329,15 +5341,24 @@ REAL permanent;
   INEXACT REAL _i, _j;
   REAL _0;
 
-  adx = (REAL)(pa[0] - pd[0]);
-  bdx = (REAL)(pb[0] - pd[0]);
-  cdx = (REAL)(pc[0] - pd[0]);
-  ady = (REAL)(pa[1] - pd[1]);
-  bdy = (REAL)(pb[1] - pd[1]);
-  cdy = (REAL)(pc[1] - pd[1]);
+  realx2_t ad_vec = pa_vec - pd_vec;
+  realx2_t bd_vec = pb_vec - pd_vec;
+  realx2_t cd_vec = pc_vec - pd_vec;
+  adx = ad_vec[0];
+  bdx = bd_vec[0];
+  cdx = cd_vec[0];
+  ady = ad_vec[1];
+  bdy = bd_vec[1];
+  cdy = cd_vec[1];
 
-  Two_Product(bdx, cdy, bdxcdy1, bdxcdy0);
-  Two_Product(cdx, bdy, cdxbdy1, cdxbdy0);
+  realx2_t bd1 = realx2_t{ 0, 0 };
+  realx2_t bd0 = realx2_t{ 0, 0 };
+  Two_Product_Vec(bd_vec, __builtin_shuffle(cd_vec, longx2_t{ 1, 0 }), bd1, bd0);
+  bdxcdy1 = bd1[0];
+  cdxbdy1 = bd1[1];
+  bdxcdy0 = bd0[0];
+  cdxbdy0 = bd0[1];
+  // Two_Product(bdy, cdx, cdxbdy1, cdxbdy0);
   Two_Two_Diff(bdxcdy1, bdxcdy0, cdxbdy1, cdxbdy0, bc3, bc[2], bc[1], bc[0]);
   bc[3] = bc3;
   axbclen = scale_expansion_zeroelim(4, bc, adx, axbc);
@@ -5346,8 +5367,13 @@ REAL permanent;
   ayybclen = scale_expansion_zeroelim(aybclen, aybc, ady, ayybc);
   alen = fast_expansion_sum_zeroelim(axxbclen, axxbc, ayybclen, ayybc, adet);
 
-  Two_Product(cdx, ady, cdxady1, cdxady0);
-  Two_Product(adx, cdy, adxcdy1, adxcdy0);
+  realx2_t ca1 = realx2_t{ 0, 0 };
+  realx2_t ca0 = realx2_t{ 0, 0 };
+  Two_Product_Vec(cd_vec, __builtin_shuffle(ad_vec, longx2_t{ 1, 0 }), ca1, ca0);
+  cdxady1 = ca1[0];
+  adxcdy1 = ca1[1];
+  cdxady0 = ca0[0];
+  adxcdy0 = ca0[1];
   Two_Two_Diff(cdxady1, cdxady0, adxcdy1, adxcdy0, ca3, ca[2], ca[1], ca[0]);
   ca[3] = ca3;
   bxcalen = scale_expansion_zeroelim(4, ca, bdx, bxca);
@@ -5356,8 +5382,13 @@ REAL permanent;
   byycalen = scale_expansion_zeroelim(bycalen, byca, bdy, byyca);
   blen = fast_expansion_sum_zeroelim(bxxcalen, bxxca, byycalen, byyca, bdet);
 
-  Two_Product(adx, bdy, adxbdy1, adxbdy0);
-  Two_Product(bdx, ady, bdxady1, bdxady0);
+  realx2_t ab1 = realx2_t{ 0, 0 };
+  realx2_t ab0 = realx2_t{ 0, 0 };
+  Two_Product_Vec(ad_vec, __builtin_shuffle(bd_vec, longx2_t{ 1, 0 }), ab1, ab0);
+  adxbdy1 = ab1[0];
+  bdxady1 = ab1[1];
+  adxbdy0 = ab0[0];
+  bdxady0 = ab0[1];
   Two_Two_Diff(adxbdy1, adxbdy0, bdxady1, bdxady0, ab3, ab[2], ab[1], ab[0]);
   ab[3] = ab3;
   cxablen = scale_expansion_zeroelim(4, ab, cdx, cxab);
@@ -5375,12 +5406,18 @@ REAL permanent;
     return det;
   }
 
-  Two_Diff_Tail(pa[0], pd[0], adx, adxtail);
-  Two_Diff_Tail(pa[1], pd[1], ady, adytail);
-  Two_Diff_Tail(pb[0], pd[0], bdx, bdxtail);
-  Two_Diff_Tail(pb[1], pd[1], bdy, bdytail);
-  Two_Diff_Tail(pc[0], pd[0], cdx, cdxtail);
-  Two_Diff_Tail(pc[1], pd[1], cdy, cdytail);
+  realx2_t adtail = { 0, 0 };
+  Two_Diff_Tail_Vec(pa_vec, pd_vec, ad_vec, adtail);
+  REAL adxtail = adtail[0];
+  REAL adytail = adtail[1];
+  realx2_t bdtail = { 0, 0 };
+  Two_Diff_Tail_Vec(pb_vec, pd_vec, bd_vec, bdtail);
+  REAL bdxtail = bdtail[0];
+  REAL bdytail = bdtail[1];
+  realx2_t cdtail = { 0, 0 };
+  Two_Diff_Tail_Vec(pc_vec, pd_vec, cd_vec, cdtail);
+  REAL cdxtail = cdtail[0];
+  REAL cdytail = cdtail[1];
   if ((adxtail == 0.0) && (bdxtail == 0.0) && (cdxtail == 0.0)
       && (adytail == 0.0) && (bdytail == 0.0) && (cdytail == 0.0)) {
     return det;
@@ -5405,22 +5442,37 @@ REAL permanent;
 
   if ((bdxtail != 0.0) || (bdytail != 0.0)
       || (cdxtail != 0.0) || (cdytail != 0.0)) {
-    Square(adx, adxadx1, adxadx0);
-    Square(ady, adyady1, adyady0);
+    realx2_t adad1 = { 0, 0 };
+    realx2_t adad0 = { 0, 0 };
+    Square_Vec(ad_vec, adad1, adad0);
+    adxadx1 = adad1[0];
+    adyady1 = adad1[1];
+    adxadx0 = adad0[0];
+    adyady0 = adad0[1];
     Two_Two_Sum(adxadx1, adxadx0, adyady1, adyady0, aa3, aa[2], aa[1], aa[0]);
     aa[3] = aa3;
   }
   if ((cdxtail != 0.0) || (cdytail != 0.0)
       || (adxtail != 0.0) || (adytail != 0.0)) {
-    Square(bdx, bdxbdx1, bdxbdx0);
-    Square(bdy, bdybdy1, bdybdy0);
+    realx2_t bdbd1 = { 0, 0 };
+    realx2_t bdbd0 = { 0, 0 };
+    Square_Vec(bd_vec, bdbd1, bdbd0);
+    bdxbdx1 = bdbd1[0];
+    bdybdy1 = bdbd1[1];
+    bdxbdx0 = bdbd0[0];
+    bdybdy0 = bdbd0[1];
     Two_Two_Sum(bdxbdx1, bdxbdx0, bdybdy1, bdybdy0, bb3, bb[2], bb[1], bb[0]);
     bb[3] = bb3;
   }
   if ((adxtail != 0.0) || (adytail != 0.0)
       || (bdxtail != 0.0) || (bdytail != 0.0)) {
-    Square(cdx, cdxcdx1, cdxcdx0);
-    Square(cdy, cdycdy1, cdycdy0);
+    realx2_t cdcd1 = { 0, 0 };
+    realx2_t cdcd0 = { 0, 0 };
+    Square_Vec(cd_vec, cdcd1, cdcd0);
+    cdxcdx1 = cdcd1[0];
+    cdycdy1 = cdcd1[1];
+    cdxcdx0 = cdcd0[0];
+    cdycdy0 = cdcd0[1];
     Two_Two_Sum(cdxcdx1, cdxcdx0, cdycdy1, cdycdy0, cc3, cc[2], cc[1], cc[0]);
     cc[3] = cc3;
   }
@@ -5835,21 +5887,12 @@ REAL permanent;
   return finnow[finlength - 1];
 }
 
-static
-#ifdef ANSI_DECLARATORS
-REAL incircle(struct mesh* m, struct behavior* b,
-              vertex pa, vertex pb, vertex pc, vertex pd)
-#else /* not ANSI_DECLARATORS */
-REAL incircle(m, b, pa, pb, pc, pd)
-struct mesh* m;
-struct behavior* b;
-vertex pa;
-vertex pb;
-vertex pc;
-vertex pd;
-#endif /* not ANSI_DECLARATORS */
-
-{
+static REAL incircle(struct mesh* m, struct behavior* b, vertex pa, vertex pb, vertex pc, vertex pd) {
+  realx2_t pa_vec = realx2_t{ pa[0], pa[1] };
+  realx2_t pb_vec = realx2_t{ pb[0], pb[1] };
+  realx2_t pc_vec = realx2_t{ pc[0], pc[1] };
+  realx2_t pd_vec = realx2_t{ pd[0], pd[1] };
+  
   REAL adx, bdx, cdx, ady, bdy, cdy;
   REAL bdxcdy, cdxbdy, cdxady, adxcdy, adxbdy, bdxady;
   REAL alift, blift, clift;
@@ -5858,12 +5901,15 @@ vertex pd;
 
   m->incirclecount++;
 
-  adx = pa[0] - pd[0];
-  bdx = pb[0] - pd[0];
-  cdx = pc[0] - pd[0];
-  ady = pa[1] - pd[1];
-  bdy = pb[1] - pd[1];
-  cdy = pc[1] - pd[1];
+  realx2_t ad_vec = pa_vec - pd_vec;
+  realx2_t bd_vec = pb_vec - pd_vec;
+  realx2_t cd_vec = pc_vec - pd_vec;
+  adx = ad_vec[0];
+  bdx = bd_vec[0];
+  cdx = cd_vec[0];
+  ady = ad_vec[1];
+  bdy = bd_vec[1];
+  cdy = cd_vec[1];
 
   bdxcdy = bdx * cdy;
   cdxbdy = cdx * bdy;
@@ -11038,27 +11084,10 @@ struct behavior* b;
 
 #ifdef TRILIBRARY
 
-#ifdef ANSI_DECLARATORS
 int reconstruct(struct mesh* m, struct behavior* b, std::shared_ptr<unsigned int> trianglelist,
                 std::shared_ptr<REAL> triangleattriblist, std::shared_ptr<REAL> trianglearealist,
                 int elements, int corners, int attribs,
                 std::shared_ptr<int> segmentlist, std::shared_ptr<int> segmentmarkerlist, int numberofsegments)
-#else /* not ANSI_DECLARATORS */
-int reconstruct(m, b, trianglelist, triangleattriblist, trianglearealist,
-                elements, corners, attribs, segmentlist, segmentmarkerlist,
-                numberofsegments)
-  struct mesh* m;
-struct behavior* b;
-int* trianglelist;
-REAL* triangleattriblist;
-REAL* trianglearealist;
-int elements;
-int corners;
-int attribs;
-int* segmentlist;
-int* segmentmarkerlist;
-int numberofsegments;
-#endif /* not ANSI_DECLARATORS */
 
 #else /* not TRILIBRARY */
 
@@ -14155,7 +14184,7 @@ void readholes(struct mesh* m, struct behavior* b,
   stringptr = readline(inputline, polyfile, polyfilename);
   *holes = (int)strtol(stringptr, &stringptr, 0);
   if (*holes > 0) {
-    holelist = trimalloc<REAL>(2 * *holes);
+    holelist = trimallocarr<REAL>(2 * *holes);
     *hlist = holelist;
     REAL* hole_ptr = holelist.get();
     for (i = 0; i < 2 * *holes; i += 2) {
@@ -14187,7 +14216,7 @@ void readholes(struct mesh* m, struct behavior* b,
     stringptr = readline(inputline, polyfile, polyfilename);
     *regions = (int)strtol(stringptr, &stringptr, 0);
     if (*regions > 0) {
-      regionlist = trimalloc<REAL>(4 * *regions);
+      regionlist = trimallocarr<REAL>(4 * *regions);
       *rlist = regionlist;
       index = 0;
       REAL* region_ptr = regionlist.get();
@@ -14309,15 +14338,15 @@ void writenodes(struct mesh* m, struct behavior* b, char* nodefilename,
   }
   /* Allocate memory for output vertices if necessary. */
   if (pointlist->get() == (REAL*)NULL) {
-    *pointlist = trimalloc<REAL>(outvertices * 2);
+    *pointlist = trimallocarr<REAL>(outvertices * 2);
   }
   /* Allocate memory for output vertex attributes if necessary. */
   if ((m->nextras > 0) && (pointattriblist->get() == (REAL*)NULL)) {
-    *pointattriblist = trimalloc<REAL>(outvertices * m->nextras);
+    *pointattriblist = trimallocarr<REAL>(outvertices * m->nextras);
   }
   /* Allocate memory for output vertex markers if necessary. */
   if (!b->nobound && (pointmarkerlist->get() == (int*)NULL)) {
-    *pointmarkerlist = trimalloc<int>(outvertices);
+    *pointmarkerlist = trimallocarr<int>(outvertices);
   }
   plist = *pointlist;
   palist = *pointattriblist;
@@ -14452,11 +14481,11 @@ void writeelements(struct mesh* m, struct behavior* b, char* elefilename,
   }
   /* Allocate memory for output triangles if necessary. */
   if (trianglelist.get() == (unsigned int*)NULL) {
-    trianglelist = trimalloc<unsigned int>(m->triangles.items * ((b->order + 1) * (b->order + 2) / 2));
+    trianglelist = trimallocarr<unsigned int>(m->triangles.items * ((b->order + 1) * (b->order + 2) / 2));
   }
   /* Allocate memory for output triangle attributes if necessary. */
   if ((m->eextras > 0) && (triangleattriblist.get() == (REAL*)NULL)) {
-    triangleattriblist = trimalloc<REAL>(m->triangles.items * m->eextras);
+    triangleattriblist = trimallocarr<REAL>(m->triangles.items * m->eextras);
   }
   tlist = trianglelist;
   talist = triangleattriblist;
@@ -14573,11 +14602,11 @@ void writepoly(struct mesh* m, struct behavior* b, char* polyfilename,
   }
   /* Allocate memory for output segments if necessary. */
   if (segmentlist->get() == (int*)NULL) {
-    *segmentlist = trimalloc<int>((int)(m->subsegs.items * 2));
+    *segmentlist = trimallocarr<int>((int)(m->subsegs.items * 2));
   }
   /* Allocate memory for output segment markers if necessary. */
   if (!b->nobound && (segmentmarkerlist->get() == (int*)NULL)) {
-    *segmentmarkerlist = trimalloc<int>((int)(m->subsegs.items));
+    *segmentmarkerlist = trimallocarr<int>((int)(m->subsegs.items));
   }
   slist = *segmentlist;
   smlist = *segmentmarkerlist;
@@ -14700,11 +14729,11 @@ void writeedges(struct mesh* m, struct behavior* b, char* edgefilename,
   }
   /* Allocate memory for edges if necessary. */
   if (edgelist->get() == (int*)NULL) {
-    *edgelist = trimalloc<int>((int)(m->edges * 2));
+    *edgelist = trimallocarr<int>((int)(m->edges * 2));
   }
   /* Allocate memory for edge markers if necessary. */
   if (!b->nobound && (edgemarkerlist->get() == (int*)NULL)) {
-    *edgemarkerlist = trimalloc<int>((int)(m->edges));
+    *edgemarkerlist = trimallocarr<int>((int)(m->edges));
   }
   elist = *edgelist;
   emlist = *edgemarkerlist;
@@ -14871,11 +14900,11 @@ char** argv;
   }
   /* Allocate memory for Voronoi vertices if necessary. */
   if (vpointlist->get() == (REAL*)NULL) {
-    *vpointlist = trimalloc<REAL>((size_t)(m->triangles.items * 2));
+    *vpointlist = trimallocarr<REAL>((size_t)(m->triangles.items * 2));
   }
   /* Allocate memory for Voronoi vertex attributes if necessary. */
   if (vpointattriblist->get() == (REAL*)NULL) {
-    *vpointattriblist = trimalloc<REAL>((size_t)(m->triangles.items * m->nextras));
+    *vpointattriblist = trimallocarr<REAL>((size_t)(m->triangles.items * m->nextras));
   }
   *vpointmarkerlist = std::shared_ptr<int>(nullptr);
   plist = *vpointlist;
@@ -14946,12 +14975,12 @@ char** argv;
   }
   /* Allocate memory for output Voronoi edges if necessary. */
   if (vedgelist->get() == (int*)NULL) {
-    *vedgelist = trimalloc<int>((int)(m->edges * 2));
+    *vedgelist = trimallocarr<int>((int)(m->edges * 2));
   }
   *vedgemarkerlist = std::shared_ptr<int>(nullptr);
   /* Allocate memory for output Voronoi norms if necessary. */
   if (vnormlist->get() == (REAL*)NULL) {
-    *vnormlist = trimalloc<REAL>((int)(m->edges * 2));
+    *vnormlist = trimallocarr<REAL>((int)(m->edges * 2));
   }
   elist = *vedgelist;
   normlist = *vnormlist;
@@ -15075,7 +15104,7 @@ char** argv;
   }
   /* Allocate memory for neighbors if necessary. */
   if (neighborlist->get() == (int*)NULL) {
-    *neighborlist = trimalloc<int>((int)(m->triangles.items * 3));
+    *neighborlist = trimallocarr<int>((int)(m->triangles.items * 3));
   }
   nlist = *neighborlist;
   index = 0;

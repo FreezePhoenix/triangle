@@ -255,11 +255,10 @@
 #define VOID int
 
 #include <memory>
-struct free_delete {
-  inline void operator()(void* x) {
-    free(x);
-  }
-};
+
+typedef REAL realx2_t __attribute__((__vector_size__(sizeof(REAL) * 2)));
+typedef long longx2_t __attribute__((__vector_size__(sizeof(REAL) * 2)));
+
 struct triangulateio {
   std::shared_ptr<REAL> pointlist;                                               /* In / out */
   std::shared_ptr<REAL> pointattributelist;                                      /* In / out */
@@ -295,17 +294,17 @@ struct triangulateio {
 
 void triangulate(const char *, std::shared_ptr<triangulateio>, std::shared_ptr<triangulateio>,
                  std::shared_ptr<triangulateio>);
-void trifree(void *memptr);
+void trifree(void* memptr);
 
 template<typename T>
-std::shared_ptr<T> trimalloc(std::size_t size) {
-  return std::shared_ptr<T>((T*)malloc(size * sizeof(T)), [](T* ptr) {
+inline std::shared_ptr<T> trimalloc(std::size_t size) {
+return std::shared_ptr<T>((T*)malloc(size * sizeof(T)), [](T* ptr) {
     free(ptr);
   });
 }
 template<typename T>
-std::shared_ptr<T[]> trimallocarr(std::size_t size) {
-  return std::shared_ptr<T[]>((T*)malloc(size * sizeof(T)), [](T* ptr) {
+std::shared_ptr<T> trimallocarr(std::size_t size) {
+  return std::shared_ptr<T>((T*)malloc(size * sizeof(T)), [](T* ptr) {
     free(ptr);
   });
 }
