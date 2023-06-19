@@ -1147,7 +1147,7 @@ REAL *ymax;
         free(*ptr);
         return 1;
       }
-      (*ptr)[index++] = (REAL) strtod(stringptr, &stringptr);
+      (*ptr)[index++] = (REAL) strtod(stringptr, &stringptr) * (1 - 2 * ((j + 1) % 2));
     }
   }
   fclose(infile);
@@ -1312,7 +1312,8 @@ REAL *ymax;
           free(*nodeptr);
           return 1;
         }
-        (*nodeptr)[index++] = (REAL) strtod(stringptr, &stringptr);
+      (*nodeptr)[index++] = (REAL) strtod(stringptr, &stringptr) * (1 - 2 * (j % 2));
+        // (*nodeptr)[index++] = (REAL) strtod(stringptr, &stringptr);
       }
     }
   }
@@ -1422,7 +1423,7 @@ REAL *ymax;
         free(*holeptr);
         return 1;
       }
-      (*holeptr)[index++] = (REAL) strtod(stringptr, &stringptr);
+      (*holeptr)[index++] = (REAL) strtod(stringptr, &stringptr) * (1 - 2 * (j % 2));
     }
   }
   fclose(infile);

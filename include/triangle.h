@@ -260,35 +260,35 @@ typedef REAL realx2_t __attribute__((__vector_size__(sizeof(REAL) * 2)));
 typedef long longx2_t __attribute__((__vector_size__(sizeof(REAL) * 2)));
 
 struct triangulateio {
-  std::shared_ptr<REAL> pointlist;                                               /* In / out */
-  std::shared_ptr<REAL> pointattributelist;                                      /* In / out */
-  std::shared_ptr<int> pointmarkerlist;                                          /* In / out */
+  std::shared_ptr<REAL[]> pointlist;                                               /* In / out */
+  std::shared_ptr<REAL[]> pointattributelist;                                      /* In / out */
+  std::shared_ptr<int[]> pointmarkerlist;                                          /* In / out */
   unsigned int numberofpoints;                                            /* In / out */
   unsigned int  numberofpointattributes;                                   /* In / out */
 
-  std::shared_ptr<unsigned int> trianglelist;                                             /* In / out */
-  std::shared_ptr<REAL> triangleattributelist;                                   /* In / out */
-  std::shared_ptr<REAL> trianglearealist;                                         /* In only */
-  std::shared_ptr<int> neighborlist;                                             /* Out only */
-  std::shared_ptr<int> subdomainlist;
+  std::shared_ptr<unsigned int[]> trianglelist;                                             /* In / out */
+  std::shared_ptr<REAL[]> triangleattributelist;                                   /* In / out */
+  std::shared_ptr<REAL[]> trianglearealist;                                         /* In only */
+  std::shared_ptr<int[]> neighborlist;                                             /* Out only */
+  std::shared_ptr<int[]> subdomainlist;
   unsigned int  numberofsubdomains;                                               /* Out only */
   unsigned int  numberoftriangles;                                         /* In / out */
   unsigned int  numberofcorners;                                           /* In / out */
   unsigned int  numberoftriangleattributes;                                /* In / out */
 
-  std::shared_ptr<int> segmentlist;                                              /* In / out */
-  std::shared_ptr<int> segmentmarkerlist;                                        /* In / out */
+  std::shared_ptr<int[]> segmentlist;                                              /* In / out */
+  std::shared_ptr<int[]> segmentmarkerlist;                                        /* In / out */
   unsigned int  numberofsegments;                                          /* In / out */
 
-  std::shared_ptr<REAL> holelist;                        /* In / pointer to array copied out */
+  std::shared_ptr<REAL[]> holelist;                        /* In / pointer to array copied out */
   unsigned int  numberofholes;                                      /* In / copied out */
 
-  std::shared_ptr<REAL> regionlist;                      /* In / pointer to array copied out */
+  std::shared_ptr<REAL[]> regionlist;                      /* In / pointer to array copied out */
   unsigned int  numberofregions;                                    /* In / copied out */
 
-  std::shared_ptr<int> edgelist;                                                 /* Out only */
-  std::shared_ptr<int> edgemarkerlist;            /* Not used with Voronoi diagram; out only */
-  std::shared_ptr<REAL> normlist;                /* Used only with Voronoi diagram; out only */
+  std::shared_ptr<int[]> edgelist;                                                 /* Out only */
+  std::shared_ptr<int[]> edgemarkerlist;            /* Not used with Voronoi diagram; out only */
+  std::shared_ptr<REAL[]> normlist;                /* Used only with Voronoi diagram; out only */
   unsigned int  numberofedges;                                             /* Out only */
 };
 
@@ -297,16 +297,18 @@ void triangulate(const char *, std::shared_ptr<triangulateio>, std::shared_ptr<t
 void trifree(void* memptr);
 
 template<typename T>
-inline std::shared_ptr<T> trimalloc(std::size_t size) {
-return std::shared_ptr<T>((T*)malloc(size * sizeof(T)), [](T* ptr) {
-    free(ptr);
-  });
+inline std::shared_ptr<T[]> trimalloc(std::size_t size) {
+  return std::make_shared_for_overwrite<T[]>(size);
 }
+
 template<typename T>
-std::shared_ptr<T> trimallocarr(std::size_t size) {
-  return std::shared_ptr<T>((T*)malloc(size * sizeof(T)), [](T* ptr) {
-    free(ptr);
-  });
+inline std::shared_ptr<T> trimalloc_default(std::size_t size) {
+  return std::shared_ptr<T>(static_cast<T*>(malloc(size * sizeof(T))), free);
+}
+
+template<typename T>
+std::shared_ptr<T[]> trimallocarr(std::size_t size) {
+  return std::make_shared_for_overwrite<T[]>(size);
 }
 
 #endif /* TRIANGLE_INCLUDE_H_ */
