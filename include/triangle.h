@@ -294,7 +294,6 @@ struct triangulateio {
 
 void triangulate(const char *, std::shared_ptr<triangulateio>, std::shared_ptr<triangulateio>,
                  std::shared_ptr<triangulateio>);
-void trifree(void* memptr);
 
 template<typename T>
 inline std::shared_ptr<T[]> trimalloc(std::size_t size) {

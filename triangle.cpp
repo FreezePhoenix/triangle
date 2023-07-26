@@ -4,9 +4,6 @@
 #define REAL double
 #endif
 
-typedef REAL realx2_t __attribute__((__vector_size__(sizeof(REAL) * 2)));
-typedef long longx2_t __attribute__((__vector_size__(sizeof(REAL) * 2)));
-
 #define ANSI_DECLARATORS
 /*****************************************************************************/
 /*                                                                           */
@@ -3848,14 +3845,7 @@ void poolzero(struct memorypool& pool) {
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void poolrestart(struct memorypool* pool)
-#else /* not ANSI_DECLARATORS */
-void poolrestart(pool)
-struct memorypool* pool;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void poolrestart(struct memorypool* pool) {
   INT_PTR alignptr = 0;
 
   pool->items = 0;
@@ -3894,19 +3884,7 @@ struct memorypool* pool;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void poolinit(struct memorypool* pool, int bytecount, int itemcount,
-              int firstitemcount, int alignment)
-#else /* not ANSI_DECLARATORS */
-void poolinit(pool, bytecount, itemcount, firstitemcount, alignment)
-struct memorypool* pool;
-int bytecount;
-int itemcount;
-int firstitemcount;
-int alignment;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void poolinit(struct memorypool* pool, int bytecount, int itemcount, int firstitemcount, int alignment) {
   /* Find the proper alignment, which must be at least as large as:   */
   /*   - The parameter `alignment'.                                   */
   /*   - sizeof(VOID *), so the stack of dead items can be maintained */
@@ -3942,14 +3920,7 @@ int alignment;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void pooldeinit(struct memorypool* pool)
-#else /* not ANSI_DECLARATORS */
-void pooldeinit(pool)
-struct memorypool* pool;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void pooldeinit(struct memorypool* pool) {
   while (pool->firstblock != (VOID**)NULL) {
     pool->nowblock = (VOID**)*(pool->firstblock);
     trifree((VOID*)pool->firstblock);
@@ -3963,14 +3934,7 @@ struct memorypool* pool;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-VOID* poolalloc(struct memorypool* pool)
-#else /* not ANSI_DECLARATORS */
-VOID* poolalloc(pool)
-struct memorypool* pool;
-#endif /* not ANSI_DECLARATORS */
-
-{
+VOID* poolalloc(struct memorypool* pool) {
   VOID* newitem;
   VOID** newblock;
   INT_PTR alignptr = 0;
@@ -4026,15 +3990,7 @@ struct memorypool* pool;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void pooldealloc(struct memorypool* pool, VOID* dyingitem)
-#else /* not ANSI_DECLARATORS */
-void pooldealloc(pool, dyingitem)
-struct memorypool* pool;
-VOID* dyingitem;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void pooldealloc(struct memorypool* pool, VOID* dyingitem) {
   /* Push freshly killed item onto stack. */
   *((VOID**)dyingitem) = pool->deaditemstack;
   pool->deaditemstack = dyingitem;
@@ -4049,14 +4005,7 @@ VOID* dyingitem;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void traversalinit(struct memorypool* pool)
-#else /* not ANSI_DECLARATORS */
-void traversalinit(pool)
-struct memorypool* pool;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void traversalinit(struct memorypool* pool) {
   INT_PTR alignptr = 0;
 
   /* Begin the traversal in the first block. */
@@ -4085,14 +4034,7 @@ struct memorypool* pool;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-VOID* traverse(struct memorypool* pool)
-#else /* not ANSI_DECLARATORS */
-VOID* traverse(pool)
-struct memorypool* pool;
-#endif /* not ANSI_DECLARATORS */
-
-{
+VOID* traverse(struct memorypool* pool) {
   VOID* newitem;
   INT_PTR alignptr = 0;
 
@@ -4150,18 +4092,7 @@ struct memorypool* pool;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void dummyinit(struct mesh* m, struct behavior* b, int trianglebytes,
-               int subsegbytes)
-#else /* not ANSI_DECLARATORS */
-void dummyinit(m, b, trianglebytes, subsegbytes)
-struct mesh* m;
-struct behavior* b;
-int trianglebytes;
-int subsegbytes;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void dummyinit(struct mesh* m, struct behavior* b, int trianglebytes, int subsegbytes) {
   INT_PTR alignptr = 0;
 
   /* Set up `dummytri', the `triangle' that occupies "outer space." */
@@ -4230,15 +4161,7 @@ int subsegbytes;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void initializevertexpool(struct mesh* m, struct behavior* b)
-#else /* not ANSI_DECLARATORS */
-void initializevertexpool(m, b)
-struct mesh* m;
-struct behavior* b;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void initializevertexpool(struct mesh* m, struct behavior* b) {
   int vertexsize;
 
   /* The index within each vertex at which the boundary marker is found,    */
@@ -4273,15 +4196,7 @@ struct behavior* b;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void initializetrisubpools(struct mesh* m, struct behavior* b)
-#else /* not ANSI_DECLARATORS */
-void initializetrisubpools(m, b)
-struct mesh* m;
-struct behavior* b;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void initializetrisubpools(struct mesh* m, struct behavior* b) {
   int trisize;
 
   /* The index within each triangle at which the extra nodes (above three)  */
@@ -4340,15 +4255,7 @@ struct behavior* b;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void triangledealloc(struct mesh* m, triangle* dyingtriangle)
-#else /* not ANSI_DECLARATORS */
-void triangledealloc(m, dyingtriangle)
-struct mesh* m;
-triangle* dyingtriangle;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void triangledealloc(struct mesh* m, triangle* dyingtriangle) {
   /* Mark the triangle as dead.  This makes it possible to detect dead */
   /*   triangles when traversing the list of all triangles.            */
   killtri(dyingtriangle);
@@ -4361,14 +4268,7 @@ triangle* dyingtriangle;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-triangle* triangletraverse(struct mesh* m)
-#else /* not ANSI_DECLARATORS */
-triangle* triangletraverse(m)
-struct mesh* m;
-#endif /* not ANSI_DECLARATORS */
-
-{
+triangle* triangletraverse(struct mesh* m) {
   triangle* newtriangle;
 
   do {
@@ -4386,15 +4286,7 @@ struct mesh* m;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void subsegdealloc(struct mesh* m, subseg* dyingsubseg)
-#else /* not ANSI_DECLARATORS */
-void subsegdealloc(m, dyingsubseg)
-struct mesh* m;
-subseg* dyingsubseg;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void subsegdealloc(struct mesh* m, subseg* dyingsubseg) {
   /* Mark the subsegment as dead.  This makes it possible to detect dead */
   /*   subsegments when traversing the list of all subsegments.          */
   killsubseg(dyingsubseg);
@@ -4407,14 +4299,7 @@ subseg* dyingsubseg;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-subseg* subsegtraverse(struct mesh* m)
-#else /* not ANSI_DECLARATORS */
-subseg* subsegtraverse(m)
-struct mesh* m;
-#endif /* not ANSI_DECLARATORS */
-
-{
+subseg* subsegtraverse(struct mesh* m) {
   subseg* newsubseg;
 
   do {
@@ -4432,15 +4317,7 @@ struct mesh* m;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void vertexdealloc(struct mesh* m, vertex dyingvertex)
-#else /* not ANSI_DECLARATORS */
-void vertexdealloc(m, dyingvertex)
-struct mesh* m;
-vertex dyingvertex;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void vertexdealloc(struct mesh* m, vertex dyingvertex) {
   /* Mark the vertex as dead.  This makes it possible to detect dead */
   /*   vertices when traversing the list of all vertices.            */
   setvertextype(dyingvertex, DEADVERTEX);
@@ -4453,14 +4330,7 @@ vertex dyingvertex;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-vertex vertextraverse(struct mesh* m)
-#else /* not ANSI_DECLARATORS */
-vertex vertextraverse(m)
-struct mesh* m;
-#endif /* not ANSI_DECLARATORS */
-
-{
+vertex vertextraverse(struct mesh* m) {
   vertex newvertex;
 
   do {
@@ -4481,15 +4351,7 @@ struct mesh* m;
 
 #ifndef CDT_ONLY
 
-#ifdef ANSI_DECLARATORS
-void badsubsegdealloc(struct mesh* m, struct badsubseg* dyingseg)
-#else /* not ANSI_DECLARATORS */
-void badsubsegdealloc(m, dyingseg)
-struct mesh* m;
-struct badsubseg* dyingseg;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void badsubsegdealloc(struct mesh* m, struct badsubseg* dyingseg) {
   /* Set subsegment's origin to NULL.  This makes it possible to detect dead */
   /*   badsubsegs when traversing the list of all badsubsegs             .   */
   dyingseg->subsegorg = (vertex)NULL;
@@ -4506,14 +4368,7 @@ struct badsubseg* dyingseg;
 
 #ifndef CDT_ONLY
 
-#ifdef ANSI_DECLARATORS
-struct badsubseg* badsubsegtraverse(struct mesh* m)
-#else /* not ANSI_DECLARATORS */
-struct badsubseg* badsubsegtraverse(m)
-  struct mesh* m;
-#endif /* not ANSI_DECLARATORS */
-
-{
+struct badsubseg* badsubsegtraverse(struct mesh* m) {
   struct badsubseg* newseg;
 
   do {
@@ -4571,15 +4426,7 @@ vertex getvertex(struct mesh* m, struct behavior* b, int number) {
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void triangledeinit(struct mesh* m, struct behavior* b)
-#else /* not ANSI_DECLARATORS */
-void triangledeinit(m, b)
-struct mesh* m;
-struct behavior* b;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void triangledeinit(struct mesh* m, struct behavior* b) {
   pooldeinit(&m->triangles);
   trifree((VOID*)m->dummytribase);
   if (b->usesegments) {
@@ -4726,29 +4573,12 @@ constexpr REAL Absolute(REAL a) {
   x = (REAL) (a + b); \
   Two_Sum_Tail(a, b, x, y)
 
-inline void Two_Sum_Vec(realx2_t a, realx2_t b, realx2_t& x, realx2_t& y) {
-  x = (a + b);
-  realx2_t bvirt = (x - a);
-  realx2_t avirt = x - bvirt;
-  realx2_t bround = b - bvirt;
-  realx2_t around = a - avirt;
-  y = around + bround;
-}
-
 #define Two_Diff_Tail(a, b, x, y) \
   bvirt = (REAL) (a - x); \
   avirt = x + bvirt; \
   bround = bvirt - b; \
   around = a - avirt; \
   y = around + bround
-
-inline void Two_Diff_Tail_Vec(realx2_t a, realx2_t b, realx2_t& x, realx2_t& y) {
-  realx2_t bvirt = a - x;
-  realx2_t avirt = x + bvirt;
-  realx2_t bround = bvirt - b;
-  realx2_t around = a - avirt;
-  y = around + bround;
-};
 
 #define Two_Diff(a, b, x, y) \
   x = (REAL) (a - b); \
@@ -4772,24 +4602,6 @@ inline void Two_Diff_Tail_Vec(realx2_t a, realx2_t b, realx2_t& x, realx2_t& y) 
   x = (REAL) (a * b); \
   Two_Product_Tail(a, b, x, y)
 
-
-inline void Two_Product_Vec(realx2_t a, realx2_t b, realx2_t& x, realx2_t& y) {
-  x = a * b;
-  realx2_t ahi, alo, bhi, blo, c, abig;
-  c = (splitter * a);
-  abig = (c - a);
-  ahi = c - abig;
-  alo = a - ahi;
-  c = (splitter * b);
-  abig = (c - b);
-  bhi = c - abig;
-  blo = b - bhi;
-  realx2_t err1 = x - (ahi * bhi);
-  realx2_t err2 = err1 - (alo * bhi);
-  realx2_t err3 = err2 - (ahi * blo);
-  y = (alo * blo) - err3;
-}
-
 /* Two_Product_Presplit() is Two_Product() where one of the inputs has       */
 /*   already been split.  Avoids redundant splitting.                        */
 
@@ -4810,19 +4622,8 @@ inline void Two_Product_Vec(realx2_t a, realx2_t b, realx2_t& x, realx2_t& y) {
   y = (alo * alo) - err3
 
 #define Square(a, x, y) \
-  x = (REAL) (a * a); \
+  x = (a * a); \
   Square_Tail(a, x, y)
-
-inline void Square_Vec(realx2_t a, realx2_t x, realx2_t y) {
-  x = a * a;
-  realx2_t c = (splitter * a);
-  realx2_t abig = (c - a);
-  realx2_t ahi = c - abig;
-  realx2_t alo = a - ahi;
-  realx2_t err1 = x - (ahi * ahi);
-  realx2_t err3 = err1 - ((ahi + ahi) * alo);
-  y = (alo * alo) - err3;
-}
 
 /* Macros for summing expansions of various fixed lengths.  These are all    */
 /*   unrolled versions of Expansion_Sum().                                   */
@@ -4830,12 +4631,6 @@ inline void Square_Vec(realx2_t a, realx2_t x, realx2_t y) {
 #define Two_One_Sum(a1, a0, b, x2, x1, x0) \
   Two_Sum(a0, b , _i, x0); \
   Two_Sum(a1, _i, x2, x1)
-
-inline void Two_One_Sum_Vec(realx2_t a1, realx2_t a0, realx2_t b, realx2_t x2, realx2_t x1, realx2_t x0) {
-  realx2_t _i = { 0, 0 };
-  Two_Sum_Vec(a0, b , _i, x0);
-  Two_Sum_Vec(a1, _i, x2, x1);
-}
 
 #define Two_One_Diff(a1, a0, b, x2, x1, x0) \
   Two_Diff(a0, b , _i, x0); \
@@ -5078,16 +4873,7 @@ static int scale_expansion_zeroelim(int elen, REAL* e, REAL b, REAL* h) {
 /*                                                                           */
 /*****************************************************************************/
 
-static
-#ifdef ANSI_DECLARATORS
-REAL estimate(int elen, REAL* e)
-#else /* not ANSI_DECLARATORS */
-REAL estimate(elen, e)
-int elen;
-REAL* e;
-#endif /* not ANSI_DECLARATORS */
-
-{
+static REAL estimate(int elen, REAL* e) {
   REAL Q;
   int eindex;
 
@@ -5118,17 +4904,7 @@ REAL* e;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-REAL counterclockwiseadapt(vertex pa, vertex pb, vertex pc, REAL detsum)
-#else /* not ANSI_DECLARATORS */
-REAL counterclockwiseadapt(pa, pb, pc, detsum)
-vertex pa;
-vertex pb;
-vertex pc;
-REAL detsum;
-#endif /* not ANSI_DECLARATORS */
-
-{
+REAL counterclockwiseadapt(vertex pa, vertex pb, vertex pc, REAL detsum) {
   INEXACT REAL acx, acy, bcx, bcy;
   REAL acxtail, acytail, bcxtail, bcytail;
   INEXACT REAL detleft, detright;
@@ -5277,10 +5053,6 @@ vertex pc;
 /*****************************************************************************/
 
 static REAL incircleadapt(vertex pa, vertex pb, vertex pc, vertex pd, REAL permanent) {
-  realx2_t pa_vec = realx2_t{ pa[0], pa[1] };
-  realx2_t pb_vec = realx2_t{ pb[0], pb[1] };
-  realx2_t pc_vec = realx2_t{ pc[0], pc[1] };
-  realx2_t pd_vec = realx2_t{ pd[0], pd[1] };
   INEXACT REAL adx, bdx, cdx, ady, bdy, cdy;
   REAL det, errbound;
 
@@ -5297,9 +5069,10 @@ static REAL incircleadapt(vertex pa, vertex pb, vertex pc, vertex pd, REAL perma
   REAL abdet[64];
   int ablen;
   REAL fin1[1152], fin2[1152];
-  REAL* finnow, * finother, * finswap;
+  REAL *finnow, *finother, *finswap;
   int finlength;
 
+  REAL adxtail, bdxtail, cdxtail, adytail, bdytail, cdytail;
   INEXACT REAL adxadx1, adyady1, bdxbdx1, bdybdy1, cdxcdx1, cdycdy1;
   REAL adxadx0, adyady0, bdxbdx0, bdybdy0, cdxcdx0, cdycdy0;
   REAL aa[4], bb[4], cc[4];
@@ -5341,24 +5114,15 @@ static REAL incircleadapt(vertex pa, vertex pb, vertex pc, vertex pd, REAL perma
   INEXACT REAL _i, _j;
   REAL _0;
 
-  realx2_t ad_vec = pa_vec - pd_vec;
-  realx2_t bd_vec = pb_vec - pd_vec;
-  realx2_t cd_vec = pc_vec - pd_vec;
-  adx = ad_vec[0];
-  bdx = bd_vec[0];
-  cdx = cd_vec[0];
-  ady = ad_vec[1];
-  bdy = bd_vec[1];
-  cdy = cd_vec[1];
+  adx = (REAL) (pa[0] - pd[0]);
+  bdx = (REAL) (pb[0] - pd[0]);
+  cdx = (REAL) (pc[0] - pd[0]);
+  ady = (REAL) (pa[1] - pd[1]);
+  bdy = (REAL) (pb[1] - pd[1]);
+  cdy = (REAL) (pc[1] - pd[1]);
 
-  realx2_t bd1 = realx2_t{ 0, 0 };
-  realx2_t bd0 = realx2_t{ 0, 0 };
-  Two_Product_Vec(bd_vec, __builtin_shuffle(cd_vec, longx2_t{ 1, 0 }), bd1, bd0);
-  bdxcdy1 = bd1[0];
-  cdxbdy1 = bd1[1];
-  bdxcdy0 = bd0[0];
-  cdxbdy0 = bd0[1];
-  // Two_Product(bdy, cdx, cdxbdy1, cdxbdy0);
+  Two_Product(bdx, cdy, bdxcdy1, bdxcdy0);
+  Two_Product(cdx, bdy, cdxbdy1, cdxbdy0);
   Two_Two_Diff(bdxcdy1, bdxcdy0, cdxbdy1, cdxbdy0, bc3, bc[2], bc[1], bc[0]);
   bc[3] = bc3;
   axbclen = scale_expansion_zeroelim(4, bc, adx, axbc);
@@ -5367,13 +5131,8 @@ static REAL incircleadapt(vertex pa, vertex pb, vertex pc, vertex pd, REAL perma
   ayybclen = scale_expansion_zeroelim(aybclen, aybc, ady, ayybc);
   alen = fast_expansion_sum_zeroelim(axxbclen, axxbc, ayybclen, ayybc, adet);
 
-  realx2_t ca1 = realx2_t{ 0, 0 };
-  realx2_t ca0 = realx2_t{ 0, 0 };
-  Two_Product_Vec(cd_vec, __builtin_shuffle(ad_vec, longx2_t{ 1, 0 }), ca1, ca0);
-  cdxady1 = ca1[0];
-  adxcdy1 = ca1[1];
-  cdxady0 = ca0[0];
-  adxcdy0 = ca0[1];
+  Two_Product(cdx, ady, cdxady1, cdxady0);
+  Two_Product(adx, cdy, adxcdy1, adxcdy0);
   Two_Two_Diff(cdxady1, cdxady0, adxcdy1, adxcdy0, ca3, ca[2], ca[1], ca[0]);
   ca[3] = ca3;
   bxcalen = scale_expansion_zeroelim(4, ca, bdx, bxca);
@@ -5382,13 +5141,8 @@ static REAL incircleadapt(vertex pa, vertex pb, vertex pc, vertex pd, REAL perma
   byycalen = scale_expansion_zeroelim(bycalen, byca, bdy, byyca);
   blen = fast_expansion_sum_zeroelim(bxxcalen, bxxca, byycalen, byyca, bdet);
 
-  realx2_t ab1 = realx2_t{ 0, 0 };
-  realx2_t ab0 = realx2_t{ 0, 0 };
-  Two_Product_Vec(ad_vec, __builtin_shuffle(bd_vec, longx2_t{ 1, 0 }), ab1, ab0);
-  adxbdy1 = ab1[0];
-  bdxady1 = ab1[1];
-  adxbdy0 = ab0[0];
-  bdxady0 = ab0[1];
+  Two_Product(adx, bdy, adxbdy1, adxbdy0);
+  Two_Product(bdx, ady, bdxady1, bdxady0);
   Two_Two_Diff(adxbdy1, adxbdy0, bdxady1, bdxady0, ab3, ab[2], ab[1], ab[0]);
   ab[3] = ab3;
   cxablen = scale_expansion_zeroelim(4, ab, cdx, cxab);
@@ -5406,18 +5160,12 @@ static REAL incircleadapt(vertex pa, vertex pb, vertex pc, vertex pd, REAL perma
     return det;
   }
 
-  realx2_t adtail = { 0, 0 };
-  Two_Diff_Tail_Vec(pa_vec, pd_vec, ad_vec, adtail);
-  REAL adxtail = adtail[0];
-  REAL adytail = adtail[1];
-  realx2_t bdtail = { 0, 0 };
-  Two_Diff_Tail_Vec(pb_vec, pd_vec, bd_vec, bdtail);
-  REAL bdxtail = bdtail[0];
-  REAL bdytail = bdtail[1];
-  realx2_t cdtail = { 0, 0 };
-  Two_Diff_Tail_Vec(pc_vec, pd_vec, cd_vec, cdtail);
-  REAL cdxtail = cdtail[0];
-  REAL cdytail = cdtail[1];
+  Two_Diff_Tail(pa[0], pd[0], adx, adxtail);
+  Two_Diff_Tail(pa[1], pd[1], ady, adytail);
+  Two_Diff_Tail(pb[0], pd[0], bdx, bdxtail);
+  Two_Diff_Tail(pb[1], pd[1], bdy, bdytail);
+  Two_Diff_Tail(pc[0], pd[0], cdx, cdxtail);
+  Two_Diff_Tail(pc[1], pd[1], cdy, cdytail);
   if ((adxtail == 0.0) && (bdxtail == 0.0) && (cdxtail == 0.0)
       && (adytail == 0.0) && (bdytail == 0.0) && (cdytail == 0.0)) {
     return det;
@@ -5425,14 +5173,14 @@ static REAL incircleadapt(vertex pa, vertex pb, vertex pc, vertex pd, REAL perma
 
   errbound = iccerrboundC * permanent + resulterrbound * Absolute(det);
   det += ((adx * adx + ady * ady) * ((bdx * cdytail + cdy * bdxtail)
-    - (bdy * cdxtail + cdx * bdytail))
+                                     - (bdy * cdxtail + cdx * bdytail))
           + 2.0 * (adx * adxtail + ady * adytail) * (bdx * cdy - bdy * cdx))
-    + ((bdx * bdx + bdy * bdy) * ((cdx * adytail + ady * cdxtail)
-      - (cdy * adxtail + adx * cdytail))
-       + 2.0 * (bdx * bdxtail + bdy * bdytail) * (cdx * ady - cdy * adx))
-    + ((cdx * cdx + cdy * cdy) * ((adx * bdytail + bdy * adxtail)
-      - (ady * bdxtail + bdx * adytail))
-       + 2.0 * (cdx * cdxtail + cdy * cdytail) * (adx * bdy - ady * bdx));
+       + ((bdx * bdx + bdy * bdy) * ((cdx * adytail + ady * cdxtail)
+                                     - (cdy * adxtail + adx * cdytail))
+          + 2.0 * (bdx * bdxtail + bdy * bdytail) * (cdx * ady - cdy * adx))
+       + ((cdx * cdx + cdy * cdy) * ((adx * bdytail + bdy * adxtail)
+                                     - (ady * bdxtail + bdx * adytail))
+          + 2.0 * (cdx * cdxtail + cdy * cdytail) * (adx * bdy - ady * bdx));
   if ((det >= errbound) || (-det >= errbound)) {
     return det;
   }
@@ -5442,37 +5190,22 @@ static REAL incircleadapt(vertex pa, vertex pb, vertex pc, vertex pd, REAL perma
 
   if ((bdxtail != 0.0) || (bdytail != 0.0)
       || (cdxtail != 0.0) || (cdytail != 0.0)) {
-    realx2_t adad1 = { 0, 0 };
-    realx2_t adad0 = { 0, 0 };
-    Square_Vec(ad_vec, adad1, adad0);
-    adxadx1 = adad1[0];
-    adyady1 = adad1[1];
-    adxadx0 = adad0[0];
-    adyady0 = adad0[1];
+    Square(adx, adxadx1, adxadx0);
+    Square(ady, adyady1, adyady0);
     Two_Two_Sum(adxadx1, adxadx0, adyady1, adyady0, aa3, aa[2], aa[1], aa[0]);
     aa[3] = aa3;
   }
   if ((cdxtail != 0.0) || (cdytail != 0.0)
       || (adxtail != 0.0) || (adytail != 0.0)) {
-    realx2_t bdbd1 = { 0, 0 };
-    realx2_t bdbd0 = { 0, 0 };
-    Square_Vec(bd_vec, bdbd1, bdbd0);
-    bdxbdx1 = bdbd1[0];
-    bdybdy1 = bdbd1[1];
-    bdxbdx0 = bdbd0[0];
-    bdybdy0 = bdbd0[1];
+    Square(bdx, bdxbdx1, bdxbdx0);
+    Square(bdy, bdybdy1, bdybdy0);
     Two_Two_Sum(bdxbdx1, bdxbdx0, bdybdy1, bdybdy0, bb3, bb[2], bb[1], bb[0]);
     bb[3] = bb3;
   }
   if ((adxtail != 0.0) || (adytail != 0.0)
       || (bdxtail != 0.0) || (bdytail != 0.0)) {
-    realx2_t cdcd1 = { 0, 0 };
-    realx2_t cdcd0 = { 0, 0 };
-    Square_Vec(cd_vec, cdcd1, cdcd0);
-    cdxcdx1 = cdcd1[0];
-    cdycdy1 = cdcd1[1];
-    cdxcdx0 = cdcd0[0];
-    cdycdy0 = cdcd0[1];
+    Square(cdx, cdxcdx1, cdxcdx0);
+    Square(cdy, cdycdy1, cdycdy0);
     Two_Two_Sum(cdxcdx1, cdxcdx0, cdycdy1, cdycdy0, cc3, cc[2], cc[1], cc[0]);
     cc[3] = cc3;
   }
@@ -5887,12 +5620,7 @@ static REAL incircleadapt(vertex pa, vertex pb, vertex pc, vertex pd, REAL perma
   return finnow[finlength - 1];
 }
 
-static REAL incircle(struct mesh* m, struct behavior* b, vertex pa, vertex pb, vertex pc, vertex pd) {
-  realx2_t pa_vec = realx2_t{ pa[0], pa[1] };
-  realx2_t pb_vec = realx2_t{ pb[0], pb[1] };
-  realx2_t pc_vec = realx2_t{ pc[0], pc[1] };
-  realx2_t pd_vec = realx2_t{ pd[0], pd[1] };
-  
+static REAL incircle(struct mesh *m, struct behavior *b, vertex pa, vertex pb, vertex pc, vertex pd) {
   REAL adx, bdx, cdx, ady, bdy, cdy;
   REAL bdxcdy, cdxbdy, cdxady, adxcdy, adxbdy, bdxady;
   REAL alift, blift, clift;
@@ -5901,15 +5629,12 @@ static REAL incircle(struct mesh* m, struct behavior* b, vertex pa, vertex pb, v
 
   m->incirclecount++;
 
-  realx2_t ad_vec = pa_vec - pd_vec;
-  realx2_t bd_vec = pb_vec - pd_vec;
-  realx2_t cd_vec = pc_vec - pd_vec;
-  adx = ad_vec[0];
-  bdx = bd_vec[0];
-  cdx = cd_vec[0];
-  ady = ad_vec[1];
-  bdy = bd_vec[1];
-  cdy = cd_vec[1];
+  adx = pa[0] - pd[0];
+  bdx = pb[0] - pd[0];
+  cdx = pc[0] - pd[0];
+  ady = pa[1] - pd[1];
+  bdy = pb[1] - pd[1];
+  cdy = pc[1] - pd[1];
 
   bdxcdy = bdx * cdy;
   cdxbdy = cdx * bdy;
@@ -5924,16 +5649,16 @@ static REAL incircle(struct mesh* m, struct behavior* b, vertex pa, vertex pb, v
   clift = cdx * cdx + cdy * cdy;
 
   det = alift * (bdxcdy - cdxbdy)
-    + blift * (cdxady - adxcdy)
-    + clift * (adxbdy - bdxady);
+      + blift * (cdxady - adxcdy)
+      + clift * (adxbdy - bdxady);
 
   if (b->noexact) {
     return det;
   }
 
   permanent = (Absolute(bdxcdy) + Absolute(cdxbdy)) * alift
-    + (Absolute(cdxady) + Absolute(adxcdy)) * blift
-    + (Absolute(adxbdy) + Absolute(bdxady)) * clift;
+            + (Absolute(cdxady) + Absolute(adxcdy)) * blift
+            + (Absolute(adxbdy) + Absolute(bdxady)) * clift;
   errbound = iccerrboundA * permanent;
   if ((det > errbound) || (-det > errbound)) {
     return det;
