@@ -4,6 +4,7 @@
 #define REAL double
 #endif
 
+#define TRILIBRARY
 #define ANSI_DECLARATORS
 /*****************************************************************************/
 /*                                                                           */
@@ -367,25 +368,8 @@
 #ifdef LINUX
 #include <fpu_control.h>
 #endif /* LINUX */
-#ifdef TRILIBRARY
+
 #include "triangle.h"
-#else /* TRILIBRARY */
-
-template<typename T>
-inline std::shared_ptr<T> trimalloc(std::size_t size) {
-  return std::shared_ptr<T>((T*)malloc(size * sizeof(T)), [](T* ptr) {
-    free(ptr);
-  });
-}
-
-template<typename T>
-std::shared_ptr<T> trimallocarr(std::size_t size) {
-  return std::shared_ptr<T>((T*)malloc(size * sizeof(T)), [](T* ptr) {
-    free(ptr);
-  });
-}
-
-#endif /* TRILIBRARY */
 
 /* A few forward declarations.                                               */
 
