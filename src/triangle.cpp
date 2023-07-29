@@ -808,7 +808,8 @@ struct behavior {
   int incremental, sweepline, dwyer;
   int splitseg;
   int docheck;
-  int quiet, verbose;
+  int quiet;
+  int verbose;
   int usesegments;
   int order;
   int nobisect;
@@ -1377,11 +1378,11 @@ constexpr int minus1mod3[3] = { 2, 0, 1 };
 
 #ifdef EXTERNAL_TEST
 
-int triunsuitable();
+bool triunsuitable();
 
 #else /* not EXTERNAL_TEST */
 
-int triunsuitable(vertex triorg, vertex tridest, vertex triapex, REAL area) {
+bool triunsuitable(vertex triorg, vertex tridest, vertex triapex, REAL area) {
   REAL dxoa, dxda, dxod;
   REAL dyoa, dyda, dyod;
   REAL oalen, dalen, odlen;
@@ -1398,14 +1399,10 @@ int triunsuitable(vertex triorg, vertex tridest, vertex triapex, REAL area) {
   dalen = dxda * dxda + dyda * dyda;
   odlen = dxod * dxod + dyod * dyod;
   /* Find the square of the length of the longest edge. */
-  maxlen = (dalen > oalen) ? dalen : oalen;
-  maxlen = (odlen > maxlen) ? odlen : maxlen;
+  maxlen = std::max(dalen, oalen);
+  maxlen = std::max(odlen, maxlen);
 
-  if (maxlen > 0.05 * (triorg[0] * triorg[0] + triorg[1] * triorg[1]) + 0.02) {
-    return 1;
-  } else {
-    return 0;
-  }
+  return maxlen > 0.05 * (triorg[0] * triorg[0] + triorg[1] * triorg[1]) + 0.02;
 }
 
 #endif /* not EXTERNAL_TEST */
@@ -6224,25 +6221,9 @@ vertex pd;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
 void findcircumcenter(struct mesh* m, struct behavior* b,
                       vertex torg, vertex tdest, vertex tapex,
-                      vertex circumcenter, REAL* xi, REAL* eta, int offcenter)
-#else /* not ANSI_DECLARATORS */
-void findcircumcenter(m, b, torg, tdest, tapex, circumcenter, xi, eta,
-                      offcenter)
-  struct mesh* m;
-struct behavior* b;
-vertex torg;
-vertex tdest;
-vertex tapex;
-vertex circumcenter;
-REAL* xi;
-REAL* eta;
-int offcenter;
-#endif /* not ANSI_DECLARATORS */
-
-{
+                      vertex circumcenter, REAL* xi, REAL* eta, bool offcenter) {
   REAL xdo, ydo, xao, yao;
   REAL dodist, aodist, dadist;
   REAL denominator;
@@ -7193,25 +7174,12 @@ struct behavior* b;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-enum locateresult preciselocate(struct mesh* m, struct behavior* b,
-  vertex searchpoint, struct otri* searchtri,
-                                int stopatsubsegment)
-#else /* not ANSI_DECLARATORS */
-enum locateresult preciselocate(m, b, searchpoint, searchtri, stopatsubsegment)
-  struct mesh* m;
-struct behavior* b;
-vertex searchpoint;
-struct otri* searchtri;
-int stopatsubsegment;
-#endif /* not ANSI_DECLARATORS */
-
-{
+enum locateresult preciselocate(struct mesh* m, struct behavior* b, vertex searchpoint, struct otri* searchtri, bool stopatsubsegment) {
   struct otri backtracktri;
   struct osub checkedge;
   vertex forg, fdest, fapex;
   REAL orgorient, destorient;
-  int moveleft;
+  bool moveleft;
   triangle ptr;                         /* Temporary variable used by sym(). */
   subseg sptr;                      /* Temporary variable used by tspivot(). */
 
@@ -7249,11 +7217,11 @@ int stopatsubsegment;
         moveleft = (fapex[0] - searchpoint[0]) * (fdest[0] - forg[0]) +
           (fapex[1] - searchpoint[1]) * (fdest[1] - forg[1]) > 0.0;
       } else {
-        moveleft = 1;
+        moveleft = true;
       }
     } else {
       if (orgorient > 0.0) {
-        moveleft = 0;
+        moveleft = false;
       } else {
         /* The point we seek must be on the boundary of or inside this */
         /*   triangle.                                                 */
@@ -11743,18 +11711,7 @@ int newmark;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void delaunayfixup(struct mesh* m, struct behavior* b,
-                   struct otri* fixuptri, int leftside)
-#else /* not ANSI_DECLARATORS */
-void delaunayfixup(m, b, fixuptri, leftside)
-struct mesh* m;
-struct behavior* b;
-struct otri* fixuptri;
-int leftside;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void delaunayfixup(struct mesh* m, struct behavior* b, struct otri* fixuptri, bool leftside) {
   struct otri neartri;
   struct otri fartri;
   struct osub faredge;
@@ -11863,26 +11820,14 @@ int leftside;
 /*                                                                           */
 /*****************************************************************************/
 
-#ifdef ANSI_DECLARATORS
-void constrainededge(struct mesh* m, struct behavior* b,
-                     struct otri* starttri, vertex endpoint2, int newmark)
-#else /* not ANSI_DECLARATORS */
-void constrainededge(m, b, starttri, endpoint2, newmark)
-struct mesh* m;
-struct behavior* b;
-struct otri* starttri;
-vertex endpoint2;
-int newmark;
-#endif /* not ANSI_DECLARATORS */
-
-{
+void constrainededge(struct mesh* m, struct behavior* b, struct otri* starttri, vertex endpoint2, int newmark) {
   struct otri fixuptri, fixuptri2;
   struct osub crosssubseg;
   vertex endpoint1;
   vertex farvertex;
   REAL area;
-  int collision;
-  int done;
+  bool collision;
+  bool done;
   triangle ptr;             /* Temporary variable used by sym() and oprev(). */
   subseg sptr;                      /* Temporary variable used by tspivot(). */
 
@@ -11891,8 +11836,8 @@ int newmark;
   flip(m, b, &fixuptri);
   /* `collision' indicates whether we have found a vertex directly */
   /*   between endpoint1 and endpoint2.                            */
-  collision = 0;
-  done = 0;
+  collision = false;
+  done = false;
   do {
     org(fixuptri, farvertex);
     /* `farvertex' is the extreme point of the polygon we are "digging" */
@@ -11902,7 +11847,7 @@ int newmark;
       /* Enforce the Delaunay condition around endpoint2. */
       delaunayfixup(m, b, &fixuptri, 0);
       delaunayfixup(m, b, &fixuptri2, 1);
-      done = 1;
+      done = true;
     } else {
       /* Check whether farvertex is to the left or right of the segment */
       /*   being inserted, to decide which edge of fixuptri to dig      */
@@ -11910,12 +11855,12 @@ int newmark;
       area = counterclockwise(m, b, endpoint1, endpoint2, farvertex);
       if (area == 0.0) {
         /* We've collided with a vertex between endpoint1 and endpoint2. */
-        collision = 1;
+        collision = true;
         oprev(fixuptri, fixuptri2);
         /* Enforce the Delaunay condition around farvertex. */
         delaunayfixup(m, b, &fixuptri, 0);
         delaunayfixup(m, b, &fixuptri2, 1);
-        done = 1;
+        done = true;
       } else {
         if (area > 0.0) {        /* farvertex is to the left of the segment. */
           oprev(fixuptri, fixuptri2);
@@ -11939,10 +11884,10 @@ int newmark;
           flip(m, b, &fixuptri);    /* May create inverted triangle at left. */
         } else {
           /* We've collided with a segment between endpoint1 and endpoint2. */
-          collision = 1;
+          collision = true;
           /* Insert a vertex at the intersection. */
           segmentintersection(m, b, &fixuptri, &crosssubseg, endpoint2);
-          done = 1;
+          done = true;
         }
       }
     }
@@ -12202,44 +12147,15 @@ char* polyfilename;
 
     boundmarker = 0;
     /* Read and insert the segments. */
-#ifdef TRILIBRARY
     const int* segment_ptr = segmentlist.get();
     const int* segment_marker_ptr = segmentmarkerlist.get();
-#endif
+
     for (i = 0; i < m->insegments; i++) {
-#ifdef TRILIBRARY
       end1 = segment_ptr[index++];
       end2 = segment_ptr[index++];
       if (segmentmarkers) {
         boundmarker = segment_marker_ptr[i];
       }
-#else /* not TRILIBRARY */
-      stringptr = readline(inputline, polyfile, b->inpolyfilename);
-      stringptr = findfield(stringptr);
-      if (*stringptr == '\0') {
-        printf("Error:  Segment %d has no endpoints in %s.\n",
-               b->firstnumber + i, polyfilename);
-        triexit(1);
-      } else {
-        end1 = (int)strtol(stringptr, &stringptr, 0);
-      }
-      stringptr = findfield(stringptr);
-      if (*stringptr == '\0') {
-        printf("Error:  Segment %d is missing its second endpoint in %s.\n",
-               b->firstnumber + i, polyfilename);
-        triexit(1);
-      } else {
-        end2 = (int)strtol(stringptr, &stringptr, 0);
-      }
-      if (segmentmarkers) {
-        stringptr = findfield(stringptr);
-        if (*stringptr == '\0') {
-          boundmarker = 0;
-        } else {
-          boundmarker = (int)strtol(stringptr, &stringptr, 0);
-        }
-      }
-#endif /* not TRILIBRARY */
       if ((end1 < b->firstnumber) ||
           (end1 >= b->firstnumber + m->invertices)) {
         if (!b->quiet) {
